@@ -1562,4 +1562,365 @@ select.field-input { cursor: pointer; }
   border-radius: 10px;
 }
 
+/* ─── Simplified Clean Layout ────────────────────────────────── */
+.clean-top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.clean-title {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.02em;
+}
+
+.clean-sub {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-top: 3px;
+}
+
+.clean-selectors-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.select-box {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  padding: 4px 10px;
+  border-radius: 10px;
+}
+
+.select-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.clean-select {
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 0.86rem;
+  font-weight: 600;
+  outline: none;
+  cursor: pointer;
+}
+
+.clean-select option {
+  background: #0f172a;
+  color: #fff;
+}
+
+.clean-btn-ghost {
+  background: transparent;
+  border: 1px dashed rgba(99, 102, 241, 0.4);
+  color: var(--indigo-light);
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.clean-btn-ghost:hover {
+  background: rgba(99, 102, 241, 0.1);
+  border-color: var(--indigo);
+  color: #fff;
+}
+
+.clean-action-btn {
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-size: 0.86rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ─── Compact Summary Strip ──────────────────────────────────── */
+.simple-summary-strip {
+  display: flex;
+  align-items: center;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px 20px;
+  gap: 20px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.strip-item {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.strip-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.strip-val {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.01em;
+}
+
+.strip-val small {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  margin-left: 2px;
+}
+
+.strip-divider {
+  width: 1px;
+  height: 36px;
+  background: var(--border);
+}
+
+.strip-item-right {
+  margin-left: auto;
+}
+
+.simple-status-btn {
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  color: #fbbf24;
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+
+.status-all-paid {
+  background: rgba(16, 185, 129, 0.12) !important;
+  border-color: rgba(16, 185, 129, 0.3) !important;
+  color: #34d399 !important;
+}
+
+/* ─── Simple View Tabs ───────────────────────────────────────── */
+.simple-view-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.simple-tab-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-muted);
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+
+.simple-tab-btn:hover {
+  color: #fff;
+}
+
+.simple-tab-active {
+  background: var(--bg-card);
+  border-color: var(--border);
+  color: #fff !important;
+}
+
+/* ─── Clean Table ────────────────────────────────────────────── */
+.simple-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.clean-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.clean-table th {
+  background: rgba(15, 23, 42, 0.6);
+  padding: 12px 18px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+}
+
+.clean-table td {
+  padding: 14px 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  font-size: 0.88rem;
+}
+
+.clean-row:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.unit-pill {
+  background: rgba(255, 255, 255, 0.06);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #cbd5e1;
+}
+
+.tenant-title {
+  display: block;
+  font-weight: 600;
+  color: #fff;
+  font-size: 0.92rem;
+}
+
+.tenant-subtitle {
+  display: block;
+  font-size: 0.74rem;
+  color: var(--text-muted);
+  margin-top: 1px;
+}
+
+.clean-split-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.split-badge-clean {
+  background: rgba(99, 102, 241, 0.12);
+  color: #a5b4fc;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 0.76rem;
+  font-weight: 600;
+}
+
+.split-detail-numbers {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.pill-status-btn {
+  border: none;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.15s;
+}
+
+.pill-paid {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+}
+
+.pill-pending {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+}
+
+.clean-edit-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+
+.clean-edit-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+.clean-total-row {
+  background: rgba(15, 23, 42, 0.8);
+}
+
+.clean-total-row td {
+  padding: 16px 18px;
+  border-bottom: none;
+}
+
+/* ─── Simple Modal ───────────────────────────────────────────── */
+.simple-modal-card {
+  background: #0f172a;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 420px;
+  padding: 22px;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6);
+}
+
+.clean-modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.clean-split-preview {
+  background: rgba(30, 41, 59, 0.4);
+  border-radius: 10px;
+  padding: 10px 14px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.82rem;
+}
+
+.clean-close-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.clean-close-btn:hover {
+  color: #fff;
+}
+
+
 

@@ -3,41 +3,23 @@ import { collection, onSnapshot, setDoc, doc } from "firebase/firestore";
 import { db } from "../firebase";
 import { useLang } from "../context/AppContext";
 import {
-  Building2,
-  Calendar,
   CheckCircle2,
   Clock,
   Plus,
-  Search,
-  Filter,
-  TrendingUp,
-  Users,
-  Wallet,
   Home,
   FileSpreadsheet,
   Layers,
-  ChevronDown,
   Edit2,
-  Trash2,
   X,
   Check,
-  Percent,
-  Sparkles,
-  ArrowRight,
+  Calendar,
+  Wallet,
+  Users,
+  Building2,
   FolderPlus,
 } from "lucide-react";
-import {
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  Cell,
-  Legend,
-} from "recharts";
 
-// 12 Fixed Ethiopian Fiscal Months from Resource/Data.xlsx
+// Fixed 12 Ethiopian Fiscal Months from Resource/Data.xlsx
 export const FIXED_ETHIOPIAN_MONTHS = [
   { id: "meskerem", nameAm: "መስከረም", nameEn: "Meskerem", dates: "Sep 11 – Oct 10" },
   { id: "tikimt", nameAm: "ጥቅምት", nameEn: "Tikimt", dates: "Oct 11 – Nov 9", isCurrent: true },
@@ -60,12 +42,10 @@ export const FIXED_UNITS = [
     room: "Unit 01",
     nameAm: "በቀለ",
     nameEn: "Bekele",
-    categoryAm: "መኖሪያ ቤት",
-    categoryEn: "Residential Unit",
     defaultRent: 7000,
-    splitType: "shared", // 50% Mesfin / 50% Zewdnesh
-    splitAm: "50% መስፍን / 50% ዘውድነሽ",
-    splitEn: "50% Mesfin / 50% Zewdnesh",
+    splitType: "shared",
+    splitAm: "50/50 የጋራ",
+    splitEn: "50/50 Shared",
     mesfinRatio: 0.5,
     zewdneshRatio: 0.5,
   },
@@ -74,12 +54,10 @@ export const FIXED_UNITS = [
     room: "Unit 02",
     nameAm: "ልብነሽ",
     nameEn: "Libnesh",
-    categoryAm: "መኖሪያ ቤት",
-    categoryEn: "Residential Unit",
     defaultRent: 7000,
     splitType: "shared",
-    splitAm: "50% መስፍን / 50% ዘውድነሽ",
-    splitEn: "50% Mesfin / 50% Zewdnesh",
+    splitAm: "50/50 የጋራ",
+    splitEn: "50/50 Shared",
     mesfinRatio: 0.5,
     zewdneshRatio: 0.5,
   },
@@ -88,12 +66,10 @@ export const FIXED_UNITS = [
     room: "Unit 03",
     nameAm: "ጋዲሴ",
     nameEn: "Gadise",
-    categoryAm: "መኖሪያ ቤት",
-    categoryEn: "Residential Unit",
     defaultRent: 2000,
     splitType: "shared",
-    splitAm: "50% መስፍን / 50% ዘውድነሽ",
-    splitEn: "50% Mesfin / 50% Zewdnesh",
+    splitAm: "50/50 የጋራ",
+    splitEn: "50/50 Shared",
     mesfinRatio: 0.5,
     zewdneshRatio: 0.5,
   },
@@ -102,8 +78,6 @@ export const FIXED_UNITS = [
     room: "Unit 04",
     nameAm: "ደስታ",
     nameEn: "Desta",
-    categoryAm: "መኖሪያ ቤት",
-    categoryEn: "Residential Unit",
     defaultRent: 4000,
     splitType: "mesfin",
     splitAm: "100% መስፍን",
@@ -116,8 +90,6 @@ export const FIXED_UNITS = [
     room: "Unit 05",
     nameAm: "ገነት",
     nameEn: "Genet",
-    categoryAm: "መኖሪያ ቤት",
-    categoryEn: "Residential Unit",
     defaultRent: 4000,
     splitType: "mesfin",
     splitAm: "100% መስፍን",
@@ -127,11 +99,9 @@ export const FIXED_UNITS = [
   },
   {
     id: "unit-06",
-    room: "Main House (Unit 06)",
+    room: "Unit 06 (Main)",
     nameAm: "ገዛህኝ",
     nameEn: "Gezahegn",
-    categoryAm: "መኖሪያ ቤት",
-    categoryEn: "Residential Unit",
     defaultRent: 11000,
     splitType: "mesfin",
     splitAm: "100% መስፍን",
@@ -144,8 +114,6 @@ export const FIXED_UNITS = [
     room: "Unit 07",
     nameAm: "ለምለም",
     nameEn: "Lemlem",
-    categoryAm: "መኖሪያ ቤት",
-    categoryEn: "Residential Unit",
     defaultRent: 5000,
     splitType: "zewdnesh",
     splitAm: "100% ዘውድነሽ",
@@ -158,8 +126,6 @@ export const FIXED_UNITS = [
     room: "Unit 08",
     nameAm: "አስረስ",
     nameEn: "Asres",
-    categoryAm: "መኖሪያ ቤት",
-    categoryEn: "Residential Unit",
     defaultRent: 1300,
     splitType: "zewdnesh",
     splitAm: "100% ዘውድነሽ",
@@ -172,8 +138,6 @@ export const FIXED_UNITS = [
     room: "Unit 09",
     nameAm: "ወይንሸት",
     nameEn: "Weynshet",
-    categoryAm: "መኖሪያ ቤት",
-    categoryEn: "Residential Unit",
     defaultRent: 1000,
     splitType: "zewdnesh",
     splitAm: "100% ዘውድነሽ",
@@ -206,7 +170,6 @@ function createDefaultYearSheet(yearName, markPaidMonth = "tikimt") {
   };
 }
 
-// Baseline Year Sheets
 export const INITIAL_YEAR_SHEETS = {
   "2019 E.C.": createDefaultYearSheet("2019 E.C.", "tikimt"),
   "2020 E.C.": createDefaultYearSheet("2020 E.C.", ""),
@@ -228,37 +191,27 @@ export default function MonthlyRents() {
     return saved ? JSON.parse(saved) : INITIAL_YEAR_SHEETS;
   });
   const [selectedYear, setSelectedYear] = useState("2019 E.C.");
-
-  // Month & View State
   const [selectedMonth, setSelectedMonth] = useState("tikimt");
-  const [activeTab, setActiveTab] = useState("schedule"); // 'schedule' | 'matrix'
-  const [filterType, setFilterType] = useState("all"); // 'all' | 'mesfin' | 'zewdnesh' | 'shared'
-  const [search, setSearch] = useState("");
+  const [viewMode, setViewMode] = useState("monthly"); // 'monthly' | 'matrix'
 
   // Modals
   const [recordModalOpen, setRecordModalOpen] = useState(false);
-  const [batchModalOpen, setBatchModalOpen] = useState(false);
   const [newYearModalOpen, setNewYearModalOpen] = useState(false);
 
-  // Single Record Modal Form (ALL DROPDOWNS)
+  // Dropdown-Only Form State
   const [formYear, setFormYear] = useState("2019 E.C.");
   const [formMonth, setFormMonth] = useState("tikimt");
   const [formUnitId, setFormUnitId] = useState("unit-01");
   const [formAmount, setFormAmount] = useState(7000);
   const [formStatus, setFormStatus] = useState("paid");
-
-  // New Year Form
   const [newYearInput, setNewYearInput] = useState("");
-
-  // Batch Form State for the selected month
-  const [batchDraft, setBatchDraft] = useState({});
 
   // Sync to localStorage
   useEffect(() => {
     localStorage.setItem("lekulu_year_sheets", JSON.stringify(yearSheets));
   }, [yearSheets]);
 
-  // Firestore Live Listener
+  // Firestore Sync
   useEffect(() => {
     try {
       const unsub = onSnapshot(collection(db, "yearly_rent_sheets"), (snap) => {
@@ -272,24 +225,22 @@ export default function MonthlyRents() {
       });
       return unsub;
     } catch {
-      // offline fallback
+      // offline
     }
   }, []);
 
-  // Current Active Year Sheet
   const currentSheet = useMemo(() => {
     return yearSheets[selectedYear] || createDefaultYearSheet(selectedYear);
   }, [yearSheets, selectedYear]);
 
-  // Current Month's payments for all 9 units
   const currentMonthPayments = useMemo(() => {
     return currentSheet.months?.[selectedMonth] || {};
   }, [currentSheet, selectedMonth]);
 
-  // Unit payments combined with unit metadata
-  const unitList = useMemo(() => {
+  // Combine fixed units with current month status
+  const currentUnitRows = useMemo(() => {
     return FIXED_UNITS.map((u) => {
-      const payment = currentMonthPayments[u.id] || {
+      const p = currentMonthPayments[u.id] || {
         amount: u.defaultRent,
         status: "pending",
         mesfinShare: u.defaultRent * u.mesfinRatio,
@@ -297,103 +248,57 @@ export default function MonthlyRents() {
       };
       return {
         ...u,
-        currentRent: payment.amount,
-        currentMesfinShare: payment.mesfinShare,
-        currentZewdneshShare: payment.zewdneshShare,
-        status: payment.status || "pending",
+        rent: p.amount,
+        mesfin: p.mesfinShare,
+        zewdnesh: p.zewdneshShare,
+        status: p.status || "pending",
       };
     });
   }, [currentMonthPayments]);
 
-  // Filtered Units
-  const filteredUnits = useMemo(() => {
-    return unitList.filter((item) => {
-      const matchesFilter = filterType === "all" || item.splitType === filterType;
-      const q = search.toLowerCase();
-      const matchesSearch =
-        !search ||
-        (item.nameEn && item.nameEn.toLowerCase().includes(q)) ||
-        (item.nameAm && item.nameAm.includes(q)) ||
-        (item.room && item.room.toLowerCase().includes(q));
-      return matchesFilter && matchesSearch;
-    });
-  }, [unitList, filterType, search]);
+  // Monthly totals
+  const totalRent = currentUnitRows.reduce((s, u) => s + (Number(u.rent) || 0), 0);
+  const totalMesfin = currentUnitRows.reduce((s, u) => s + (Number(u.mesfin) || 0), 0);
+  const totalZewdnesh = currentUnitRows.reduce((s, u) => s + (Number(u.zewdnesh) || 0), 0);
+  const paidCount = currentUnitRows.filter((u) => u.status === "paid").length;
 
-  // Totals for Current Month
-  const totalMonthlyRent = useMemo(
-    () => unitList.reduce((sum, u) => sum + (Number(u.currentRent) || 0), 0),
-    [unitList]
-  );
-  const totalMesfinMonthly = useMemo(
-    () => unitList.reduce((sum, u) => sum + (Number(u.currentMesfinShare) || 0), 0),
-    [unitList]
-  );
-  const totalZewdneshMonthly = useMemo(
-    () => unitList.reduce((sum, u) => sum + (Number(u.currentZewdneshShare) || 0), 0),
-    [unitList]
-  );
-
-  const mesfinPct = totalMonthlyRent > 0 ? ((totalMesfinMonthly / totalMonthlyRent) * 100).toFixed(1) : 0;
-  const zewdneshPct = totalMonthlyRent > 0 ? ((totalZewdneshMonthly / totalMonthlyRent) * 100).toFixed(1) : 0;
-
-  // Annual Totals for Current Year Sheet (Sum of all 12 months)
-  const annualSheetTotal = useMemo(() => {
-    let grand = 0;
-    let mesfin = 0;
-    let zewdnesh = 0;
-    FIXED_ETHIOPIAN_MONTHS.forEach((m) => {
-      const mData = currentSheet.months?.[m.id] || {};
-      FIXED_UNITS.forEach((u) => {
-        const p = mData[u.id] || { amount: u.defaultRent, mesfinShare: u.defaultRent * u.mesfinRatio, zewdneshShare: u.defaultRent * u.zewdneshRatio };
-        grand += Number(p.amount) || 0;
-        mesfin += Number(p.mesfinShare) || 0;
-        zewdnesh += Number(p.zewdneshShare) || 0;
-      });
-    });
-    return { grand, mesfin, zewdnesh };
-  }, [currentSheet]);
-
-  // Chart Data
-  const chartData = useMemo(() => {
-    return unitList.map((u) => ({
-      name: lang === "am" ? u.nameAm : u.nameEn,
-      mesfin: u.currentMesfinShare,
-      zewdnesh: u.currentZewdneshShare,
-      total: u.currentRent,
-    }));
-  }, [unitList, lang]);
-
-  // Toggle individual status in current month
+  // Toggle single status
   const toggleStatus = (unitId) => {
-    const currentUnit = unitList.find((u) => u.id === unitId);
-    if (!currentUnit) return;
-    const newStatus = currentUnit.status === "paid" ? "pending" : "paid";
-
-    updatePaymentRecord(selectedYear, selectedMonth, unitId, currentUnit.currentRent, newStatus);
+    const unit = currentUnitRows.find((u) => u.id === unitId);
+    if (!unit) return;
+    const newStatus = unit.status === "paid" ? "pending" : "paid";
+    updatePayment(selectedYear, selectedMonth, unitId, unit.rent, newStatus);
   };
 
-  // Helper to update a payment in state and firestore
-  const updatePaymentRecord = async (year, month, unitId, amount, status) => {
-    const unitDef = FIXED_UNITS.find((u) => u.id === unitId);
-    if (!unitDef) return;
+  // Toggle entire month paid
+  const toggleAllPaid = () => {
+    const targetStatus = paidCount === FIXED_UNITS.length ? "pending" : "paid";
+    FIXED_UNITS.forEach((u) => {
+      const p = currentMonthPayments[u.id] || { amount: u.defaultRent };
+      updatePayment(selectedYear, selectedMonth, u.id, p.amount, targetStatus);
+    });
+  };
 
-    const rentNum = Number(amount) || 0;
-    const mShare = rentNum * unitDef.mesfinRatio;
-    const zShare = rentNum * unitDef.zewdneshRatio;
+  const updatePayment = (year, month, unitId, amount, status) => {
+    const uDef = FIXED_UNITS.find((u) => u.id === unitId);
+    if (!uDef) return;
+    const amt = Number(amount) || 0;
+    const mShare = amt * uDef.mesfinRatio;
+    const zShare = amt * uDef.zewdneshRatio;
 
     setYearSheets((prev) => {
-      const yearObj = prev[year] || createDefaultYearSheet(year);
-      const monthsObj = yearObj.months || {};
-      const targetMonth = monthsObj[month] || {};
+      const yObj = prev[year] || createDefaultYearSheet(year);
+      const mObj = yObj.months || {};
+      const targetMonth = mObj[month] || {};
 
       const updatedYear = {
-        ...yearObj,
+        ...yObj,
         months: {
-          ...monthsObj,
+          ...mObj,
           [month]: {
             ...targetMonth,
             [unitId]: {
-              amount: rentNum,
+              amount: amt,
               status,
               mesfinShare: mShare,
               zewdneshShare: zShare,
@@ -402,12 +307,9 @@ export default function MonthlyRents() {
         },
       };
 
-      // Background sync to Firestore
       try {
         setDoc(doc(db, "yearly_rent_sheets", year), updatedYear, { merge: true }).catch(() => {});
-      } catch {
-        // offline
-      }
+      } catch {}
 
       return {
         ...prev,
@@ -416,573 +318,319 @@ export default function MonthlyRents() {
     });
   };
 
-  // Open Single Record Modal
-  const openSingleRecordModal = (unit = null) => {
+  // Open modal with unit pre-selected
+  const openModal = (unit = null) => {
     setFormYear(selectedYear);
     setFormMonth(selectedMonth);
-    const targetUnit = unit || FIXED_UNITS[0];
-    setFormUnitId(targetUnit.id);
-    const payment = currentMonthPayments[targetUnit.id];
-    setFormAmount(payment ? payment.amount : targetUnit.defaultRent);
-    setFormStatus(payment ? payment.status : "paid");
+    const u = unit || FIXED_UNITS[0];
+    setFormUnitId(u.id);
+    const existing = currentMonthPayments[u.id];
+    setFormAmount(existing ? existing.amount : u.defaultRent);
+    setFormStatus(existing ? existing.status : "paid");
     setRecordModalOpen(true);
   };
 
-  // Change selected unit in modal dropdown (auto-fills default amount and split)
-  const handleUnitDropdownChange = (unitId) => {
+  const handleUnitSelect = (unitId) => {
     setFormUnitId(unitId);
-    const unitDef = FIXED_UNITS.find((u) => u.id === unitId);
-    if (unitDef) {
+    const u = FIXED_UNITS.find((x) => x.id === unitId);
+    if (u) {
       const existing = yearSheets[formYear]?.months?.[formMonth]?.[unitId];
-      setFormAmount(existing ? existing.amount : unitDef.defaultRent);
+      setFormAmount(existing ? existing.amount : u.defaultRent);
       setFormStatus(existing ? existing.status : "paid");
     }
   };
 
-  // Save Single Record
-  const handleSaveSingleRecord = (e) => {
+  const handleSaveModal = (e) => {
     e.preventDefault();
-    updatePaymentRecord(formYear, formMonth, formUnitId, formAmount, formStatus);
+    updatePayment(formYear, formMonth, formUnitId, formAmount, formStatus);
     setRecordModalOpen(false);
   };
 
-  // Open Batch Month Modal
-  const openBatchMonthModal = () => {
-    const draft = {};
-    FIXED_UNITS.forEach((u) => {
-      const p = currentMonthPayments[u.id] || {
-        amount: u.defaultRent,
-        status: "paid",
-      };
-      draft[u.id] = {
-        amount: p.amount,
-        status: p.status,
-      };
-    });
-    setBatchDraft(draft);
-    setBatchModalOpen(true);
-  };
-
-  // Save Batch Month
-  const handleSaveBatchMonth = (e) => {
+  const handleAddYear = (e) => {
     e.preventDefault();
-    Object.keys(batchDraft).forEach((uId) => {
-      const item = batchDraft[uId];
-      updatePaymentRecord(selectedYear, selectedMonth, uId, item.amount, item.status);
-    });
-    setBatchModalOpen(false);
-  };
+    const yr = newYearInput.trim();
+    if (!yr) return;
+    const formatted = yr.toLowerCase().includes("e.c.") || yr.includes("ዓ.ም.") ? yr : `${yr} E.C.`;
 
-  // Mark all paid in batch draft
-  const handleMarkAllBatchPaid = () => {
-    setBatchDraft((prev) => {
-      const updated = { ...prev };
-      Object.keys(updated).forEach((k) => {
-        updated[k] = { ...updated[k], status: "paid" };
-      });
-      return updated;
-    });
-  };
-
-  // Create New Year Sheet
-  const handleCreateYearSheet = (e) => {
-    e.preventDefault();
-    const cleanYear = newYearInput.trim();
-    if (!cleanYear) return;
-
-    const formattedYear = cleanYear.toLowerCase().includes("e.c.") || cleanYear.includes("ዓ.ም.")
-      ? cleanYear
-      : `${cleanYear} E.C.`;
-
-    if (yearSheets[formattedYear]) {
-      alert("This fiscal year sheet already exists!");
-      setSelectedYear(formattedYear);
-      setNewYearModalOpen(false);
-      return;
+    if (!yearSheets[formatted]) {
+      const newSheet = createDefaultYearSheet(formatted, "");
+      setYearSheets((prev) => ({ ...prev, [formatted]: newSheet }));
+      try {
+        setDoc(doc(db, "yearly_rent_sheets", formatted), newSheet).catch(() => {});
+      } catch {}
     }
-
-    const newSheet = createDefaultYearSheet(formattedYear, "");
-    setYearSheets((prev) => ({
-      ...prev,
-      [formattedYear]: newSheet,
-    }));
-    try {
-      setDoc(doc(db, "yearly_rent_sheets", formattedYear), newSheet).catch(() => {});
-    } catch {}
-
-    setSelectedYear(formattedYear);
+    setSelectedYear(formatted);
     setNewYearInput("");
     setNewYearModalOpen(false);
   };
 
-  const currentMonthObj =
-    FIXED_ETHIOPIAN_MONTHS.find((m) => m.id === selectedMonth) || FIXED_ETHIOPIAN_MONTHS[1];
-  const selectedUnitDef = FIXED_UNITS.find((u) => u.id === formUnitId) || FIXED_UNITS[0];
+  const curMonthObj = FIXED_ETHIOPIAN_MONTHS.find((m) => m.id === selectedMonth) || FIXED_ETHIOPIAN_MONTHS[1];
+  const modalUnitObj = FIXED_UNITS.find((u) => u.id === formUnitId) || FIXED_UNITS[0];
 
   return (
-    <div className="page">
-      {/* Page Header */}
-      <div className="page-header">
+    <div className="page simple-rents-page">
+      {/* ─── 1. Simplified Header & Dropdown Bar ────────────────────────── */}
+      <div className="clean-top-bar">
         <div>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-            <h1 className="page-title">{t.monthlyRentsTitle}</h1>
-            <span className="badge badge--indigo">
-              {selectedYear} {lang === "am" ? "የበጀት ሠንጠረዥ" : "Sheet"}
-            </span>
+          <h1 className="clean-title">{lang === "am" ? "የቤት ኪራይ ገቢ" : "Monthly Rental Income"}</h1>
+          <p className="clean-sub">
+            {lang === "am" ? "9 ቋሚ ክፍሎች • የመስፍን እና የዘውድነሽ ድርሻ" : "9 Fixed Units • Mesfin & Zewdnesh Allocation"}
+          </p>
+        </div>
+
+        {/* Dropdown Selectors: Year + Month + Mode */}
+        <div className="clean-selectors-group">
+          {/* Year Dropdown */}
+          <div className="select-box">
+            <span className="select-label">{lang === "am" ? "ዓመት" : "Year"}</span>
+            <select
+              className="clean-select"
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(e.target.value)}
+            >
+              {Object.keys(yearSheets).map((yr) => (
+                <option key={yr} value={yr}>
+                  {yr}
+                </option>
+              ))}
+            </select>
           </div>
-          <p className="page-subtitle">{t.monthlyRentsSubtitle}</p>
-        </div>
 
-        {/* Action Buttons: Add Payment & Batch Record */}
-        <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-          <button
-            id="batch-record-btn"
-            className="btn-secondary"
-            onClick={openBatchMonthModal}
-            title="Record all 9 units in one click"
-          >
-            <CheckCircle2 size={16} /> {lang === "am" ? "የወር ክፍያዎችን በአንድ ጊዜ መዝግብ" : "Record Full Month"}
-          </button>
-          <button
-            id="record-rent-btn"
-            className="btn-primary"
-            onClick={() => openSingleRecordModal()}
-          >
-            <Plus size={16} /> {lang === "am" ? "ክፍያ መዝግብ (Dropdown)" : "Record Rent Payment"}
-          </button>
-        </div>
-      </div>
-
-      {/* FISCAL YEAR SELECTOR (Yearly Sheets) */}
-      <div className="year-sheets-bar">
-        <div className="year-sheets-label">
-          <FileSpreadsheet size={16} />
-          <span>{lang === "am" ? "የበጀት ዓመት ሠንጠረዥ (Year Sheet):" : "Fiscal Year Sheet:"}</span>
-        </div>
-        <div className="year-pills-list">
-          {Object.keys(yearSheets).map((yr) => {
-            const isSelected = yr === selectedYear;
-            return (
-              <button
-                key={yr}
-                className={`year-pill-btn ${isSelected ? "year-pill-btn--active" : ""}`}
-                onClick={() => setSelectedYear(yr)}
-              >
-                {yr}
-              </button>
-            );
-          })}
-          <button
-            className="add-year-pill-btn"
-            onClick={() => setNewYearModalOpen(true)}
-            title="Add a brand new yearly sheet"
-          >
-            <FolderPlus size={14} /> + {lang === "am" ? "አዲስ ዓመት ሠንጠረዥ" : "New Year Sheet"}
-          </button>
-        </div>
-      </div>
-
-      {/* Fixed 12 Ethiopian Months Bar */}
-      <div className="months-scroll-container">
-        <div className="months-bar">
-          {FIXED_ETHIOPIAN_MONTHS.map((m) => {
-            const isSel = m.id === selectedMonth;
-            return (
-              <button
-                key={m.id}
-                className={`month-pill ${isSel ? "month-pill--active" : ""}`}
-                onClick={() => setSelectedMonth(m.id)}
-              >
-                <span className="month-name">
+          {/* Month Dropdown */}
+          <div className="select-box">
+            <span className="select-label">{lang === "am" ? "ወር" : "Month"}</span>
+            <select
+              className="clean-select"
+              value={selectedMonth}
+              onChange={(e) => setSelectedMonth(e.target.value)}
+            >
+              {FIXED_ETHIOPIAN_MONTHS.map((m) => (
+                <option key={m.id} value={m.id}>
                   {lang === "am" ? m.nameAm : m.nameEn}
-                </span>
-                <span className="month-dates">{m.dates}</span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
+                </option>
+              ))}
+            </select>
+          </div>
 
-      {/* KPI Stats Cards for Selected Year & Month */}
-      <div className="stats-grid" style={{ marginTop: 18 }}>
-        {/* Monthly Total Rent */}
-        <div className="stat-card stat-card--indigo">
-          <div className="stat-icon">
-            <Building2 size={24} />
-          </div>
-          <div className="stat-body">
-            <p className="stat-label">
-              {lang === "am" ? `የ${currentMonthObj.nameAm} ወርሃዊ ኪራይ ድምር` : `${currentMonthObj.nameEn} Gross Rent`}
-            </p>
-            <h3 className="stat-value">
-              {fmt(totalMonthlyRent)} <span className="stat-currency">{t.etb}</span>
-            </h3>
-            <p className="stat-sub">
-              <Calendar size={13} style={{ display: "inline", marginRight: 4 }} />
-              {selectedYear} • {currentMonthObj.dates}
-            </p>
-          </div>
-        </div>
-
-        {/* Mesfin's Share */}
-        <div className="stat-card stat-card--cyan">
-          <div className="stat-icon">
-            <Wallet size={24} />
-          </div>
-          <div className="stat-body">
-            <p className="stat-label">{t.mesfinGross}</p>
-            <h3 className="stat-value">
-              {fmt(totalMesfinMonthly)} <span className="stat-currency">{t.etb}</span>
-            </h3>
-            <p className="stat-sub">
-              <Percent size={12} style={{ display: "inline" }} /> {mesfinPct}% {lang === "am" ? "የወሩ ድርሻ" : "of month"}
-            </p>
-          </div>
-        </div>
-
-        {/* Zewdnesh's Share */}
-        <div className="stat-card stat-card--violet">
-          <div className="stat-icon">
-            <Users size={24} />
-          </div>
-          <div className="stat-body">
-            <p className="stat-label">{t.zewdneshGross}</p>
-            <h3 className="stat-value">
-              {fmt(totalZewdneshMonthly)} <span className="stat-currency">{t.etb}</span>
-            </h3>
-            <p className="stat-sub">
-              <Percent size={12} style={{ display: "inline" }} /> {zewdneshPct}% {lang === "am" ? "የወሩ ድርሻ" : "of month"}
-            </p>
-          </div>
-        </div>
-
-        {/* Annual Sheet Total */}
-        <div className="stat-card stat-card--emerald">
-          <div className="stat-icon">
-            <TrendingUp size={24} />
-          </div>
-          <div className="stat-body">
-            <p className="stat-label">{selectedYear} {lang === "am" ? "ዓመታዊ ድምር" : "Annual Sheet Total"}</p>
-            <h3 className="stat-value">
-              {fmt(annualSheetTotal.grand)} <span className="stat-currency">{t.etb}</span>
-            </h3>
-            <p className="stat-sub">
-              {FIXED_UNITS.length} {lang === "am" ? "ቋሚ ክፍሎች (100% ተከራይ)" : "Fixed Units (12 Months)"}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* View Switcher: Single Month Ledger vs. 12-Month Matrix Sheet */}
-      <div className="table-controls-card">
-        <div className="tab-pill-group">
+          {/* Add Year Button */}
           <button
-            className={`tab-pill-btn ${activeTab === "schedule" ? "tab-pill-btn--active" : ""}`}
-            onClick={() => setActiveTab("schedule")}
+            className="clean-btn-ghost"
+            onClick={() => setNewYearModalOpen(true)}
+            title="Add a new fiscal year sheet"
           >
-            <Layers size={16} /> {lang === "am" ? `${currentMonthObj.nameAm} - የተከራዮች ዝርዝር` : `${currentMonthObj.nameEn} Rent Schedule`}
+            + {lang === "am" ? "አዲስ ዓመት" : "New Year"}
           </button>
+
+          {/* Record Rent Button */}
           <button
-            className={`tab-pill-btn ${activeTab === "matrix" ? "tab-pill-btn--active" : ""}`}
-            onClick={() => setActiveTab("matrix")}
+            className="btn-primary clean-action-btn"
+            onClick={() => openModal()}
           >
-            <FileSpreadsheet size={16} /> {selectedYear} {t.allMonthsMatrix}
+            <Plus size={16} /> {lang === "am" ? "ክፍያ መዝግብ" : "Record Rent"}
           </button>
         </div>
-
-        {activeTab === "schedule" && (
-          <div className="filters-search-row">
-            <div className="filter-pills">
-              <button
-                className={`filter-btn ${filterType === "all" ? "filter-btn--active" : ""}`}
-                onClick={() => setFilterType("all")}
-              >
-                {t.filterAll}
-              </button>
-              <button
-                className={`filter-btn ${filterType === "shared" ? "filter-btn--active" : ""}`}
-                onClick={() => setFilterType("shared")}
-              >
-                {t.filterShared}
-              </button>
-              <button
-                className={`filter-btn ${filterType === "mesfin" ? "filter-btn--active" : ""}`}
-                onClick={() => setFilterType("mesfin")}
-              >
-                {t.filterMesfin}
-              </button>
-              <button
-                className={`filter-btn ${filterType === "zewdnesh" ? "filter-btn--active" : ""}`}
-                onClick={() => setFilterType("zewdnesh")}
-              >
-                {t.filterZewdnesh}
-              </button>
-            </div>
-
-            <div className="search-wrap">
-              <Search size={15} className="search-icon" />
-              <input
-                type="text"
-                className="search-input"
-                placeholder={lang === "am" ? "ተከራይ ወይም ክፍል ይፈልጉ..." : "Search tenant or unit..."}
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </div>
-          </div>
-        )}
       </div>
 
-      {/* TAB 1: SCHEDULE VIEW */}
-      {activeTab === "schedule" && (
-        <>
-          <div className="table-card">
-            <div className="table-wrapper">
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>#</th>
-                    <th>{t.tenantName}</th>
-                    <th>{lang === "am" ? "ክፍል / መለያ" : "Unit / Room"}</th>
-                    <th>{t.tenantCategory}</th>
-                    <th style={{ textAlign: "right" }}>{t.monthlyRent}</th>
-                    <th>{t.ownerSplit}</th>
-                    <th style={{ textAlign: "right" }}>{t.mesfinGross}</th>
-                    <th style={{ textAlign: "right" }}>{t.zewdneshGross}</th>
-                    <th style={{ textAlign: "center" }}>{t.paymentStatus}</th>
-                    <th style={{ textAlign: "center" }}>{lang === "am" ? "አርትዕ" : "Edit"}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredUnits.length === 0 ? (
-                    <tr>
-                      <td colSpan="10" className="empty-table-cell">
-                        {t.noData}
-                      </td>
-                    </tr>
-                  ) : (
-                    filteredUnits.map((item, idx) => {
-                      const isPaid = item.status === "paid";
-                      return (
-                        <tr key={item.id} className="table-row-hover">
-                          <td style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>
-                            {String(idx + 1).padStart(2, "0")}
-                          </td>
-                          <td>
-                            <div className="tenant-name-cell">
-                              <div className="tenant-avatar">
-                                <Home size={15} />
-                              </div>
-                              <div>
-                                <span className="tenant-name-primary">
-                                  {lang === "am" ? item.nameAm : item.nameEn}
-                                </span>
-                                <span className="tenant-name-secondary">
-                                  {lang === "am" ? item.nameEn : item.nameAm}
-                                </span>
-                              </div>
-                            </div>
-                          </td>
-                          <td>
-                            <span className="room-badge">{item.room}</span>
-                          </td>
-                          <td>
-                            <span className="category-tag">
-                              {lang === "am" ? item.categoryAm : item.categoryEn}
-                            </span>
-                          </td>
-                          <td style={{ textAlign: "right", fontWeight: 700, color: "#fff" }}>
-                            {fmt(item.currentRent)} <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>{t.etb}</span>
-                          </td>
-                          <td>
-                            <span
-                              className={`split-badge ${
-                                item.splitType === "shared"
-                                  ? "split-badge--shared"
-                                  : item.splitType === "mesfin"
-                                  ? "split-badge--mesfin"
-                                  : "split-badge--zewdnesh"
-                              }`}
-                            >
-                              {lang === "am" ? item.splitAm : item.splitEn}
-                            </span>
-                          </td>
-                          <td style={{ textAlign: "right", color: "#818cf8", fontWeight: 600 }}>
-                            {fmt(item.currentMesfinShare)} {t.etb}
-                          </td>
-                          <td style={{ textAlign: "right", color: "#c084fc", fontWeight: 600 }}>
-                            {fmt(item.currentZewdneshShare)} {t.etb}
-                          </td>
-                          <td style={{ textAlign: "center" }}>
-                            <button
-                              className={`status-pill ${isPaid ? "status-pill--paid" : "status-pill--pending"}`}
-                              onClick={() => toggleStatus(item.id)}
-                              title="Click to toggle status"
-                            >
-                              {isPaid ? (
-                                <>
-                                  <CheckCircle2 size={13} /> {t.paid}
-                                </>
-                              ) : (
-                                <>
-                                  <Clock size={13} /> {t.pending}
-                                </>
-                              )}
-                            </button>
-                          </td>
-                          <td style={{ textAlign: "center" }}>
-                            <button
-                              className="icon-action-btn"
-                              onClick={() => openSingleRecordModal(item)}
-                              title="Edit rent / payment via dropdown"
-                            >
-                              <Edit2 size={14} />
-                            </button>
-                          </td>
-                        </tr>
-                      );
-                    })
-                  )}
-                </tbody>
-                <tfoot>
-                  <tr className="table-total-row">
-                    <td colSpan="4" style={{ fontWeight: 700 }}>
-                      {lang === "am"
-                        ? `የ${currentMonthObj.nameAm} (${selectedYear}) ጠቅላላ ኪራይ ድምር`
-                        : `${currentMonthObj.nameEn} (${selectedYear}) Total Monthly Rent`}
-                    </td>
-                    <td style={{ textAlign: "right", fontWeight: 800, color: "var(--indigo-light)", fontSize: "1.05rem" }}>
-                      {fmt(totalMonthlyRent)} {t.etb}
-                    </td>
-                    <td>
-                      <span className="badge badge--dark">
-                        {mesfinPct}% M / {zewdneshPct}% Z
-                      </span>
-                    </td>
-                    <td style={{ textAlign: "right", fontWeight: 800, color: "#818cf8" }}>
-                      {fmt(totalMesfinMonthly)} {t.etb}
-                    </td>
-                    <td style={{ textAlign: "right", fontWeight: 800, color: "#c084fc" }}>
-                      {fmt(totalZewdneshMonthly)} {t.etb}
-                    </td>
-                    <td colSpan="2" style={{ textAlign: "center", color: "var(--emerald)", fontWeight: 600 }}>
-                      {unitList.filter((u) => u.status === "paid").length} / {FIXED_UNITS.length} {lang === "am" ? "የተከፈሉ" : "Paid"}
-                    </td>
-                  </tr>
-                </tfoot>
-              </table>
-            </div>
-          </div>
+      {/* ─── 2. Compact Financial Summary Bar ─────────────────────────── */}
+      <div className="simple-summary-strip">
+        <div className="strip-item">
+          <span className="strip-label">
+            {lang === "am" ? `የ${curMonthObj.nameAm} ጠቅላላ ኪራይ` : `${curMonthObj.nameEn} Total Rent`}
+          </span>
+          <span className="strip-val">{fmt(totalRent)} <small>{t.etb}</small></span>
+        </div>
 
-          {/* Bar Chart: Tenant Rent Contribution */}
-          <div className="chart-card" style={{ marginTop: 20 }}>
-            <div className="chart-card-header">
-              <div>
-                <h3 className="chart-card-title">
-                  {lang === "am" ? `${currentMonthObj.nameAm} (${selectedYear}) የኪራይ ድርሻ ግራፍ` : `${currentMonthObj.nameEn} (${selectedYear}) Rent Distribution Chart`}
-                </h3>
-                <p className="chart-card-sub">
-                  {lang === "am"
-                    ? "በእያንዳንዱ ቋሚ ክፍል የሚገኘው ወርሃዊ ገቢ እና የመስፍን/የዘውድነሽ ድርሻ"
-                    : "Individual unit monthly income allocated to Mesfin and Zewdnesh"}
-                </p>
-              </div>
-            </div>
-            <div style={{ width: "100%", height: 320 }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={chartData} margin={{ top: 20, right: 30, left: 10, bottom: 25 }}>
-                  <XAxis
-                    dataKey="name"
-                    stroke="var(--text-muted)"
-                    fontSize={12}
-                    tickLine={false}
-                  />
-                  <YAxis
-                    stroke="var(--text-muted)"
-                    fontSize={12}
-                    tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`}
-                    tickLine={false}
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      background: "rgba(15, 23, 42, 0.95)",
-                      border: "1px solid var(--border)",
-                      borderRadius: 10,
-                      color: "#fff",
-                    }}
-                    formatter={(val) => [`${fmt(val)} ETB`, ""]}
-                  />
-                  <Legend />
-                  <Bar
-                    dataKey="mesfin"
-                    name={lang === "am" ? "የመስፍን ድርሻ" : "Mesfin's Share"}
-                    fill="#6366f1"
-                    radius={[4, 4, 0, 0]}
-                  />
-                  <Bar
-                    dataKey="zewdnesh"
-                    name={lang === "am" ? "የዘውድነሽ ድርሻ" : "Zewdnesh's Share"}
-                    fill="#a855f7"
-                    radius={[4, 4, 0, 0]}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-        </>
-      )}
+        <div className="strip-divider" />
 
-      {/* TAB 2: 12-MONTH MATRIX VIEW (Matching Resource/Data.xlsx) */}
-      {activeTab === "matrix" && (
-        <div className="table-card">
-          <div className="table-card-header-inner">
-            <div>
-              <h3 style={{ fontSize: "1.05rem", fontWeight: 700, color: "#fff" }}>
-                {selectedYear} {lang === "am" ? "የ12 ወራት የቤት ኪራይ ማትሪክስ ሠንጠረዥ" : "Full 12-Month Rental Income Matrix Sheet"}
-              </h3>
-              <p style={{ fontSize: "0.82rem", color: "var(--text-muted)" }}>
-                {lang === "am"
-                  ? "የ9ኙም ቋሚ ክፍሎች ወርሃዊ የቤት ኪራይ ገቢ እና ዓመታዊ ድምር"
-                  : "All 9 fixed units across the 12 Ethiopian months with annual totals"}
-              </p>
-            </div>
-          </div>
-          <div className="table-wrapper matrix-wrapper">
-            <table className="data-table matrix-table">
+        <div className="strip-item">
+          <span className="strip-label text-indigo">
+            {lang === "am" ? "የመስፍን ድርሻ (63.8%)" : "Mesfin (63.8%)"}
+          </span>
+          <span className="strip-val text-indigo">{fmt(totalMesfin)} <small>{t.etb}</small></span>
+        </div>
+
+        <div className="strip-divider" />
+
+        <div className="strip-item">
+          <span className="strip-label text-violet">
+            {lang === "am" ? "የዘውድነሽ ድርሻ (36.2%)" : "Zewdnesh (36.2%)"}
+          </span>
+          <span className="strip-val text-violet">{fmt(totalZewdnesh)} <small>{t.etb}</small></span>
+        </div>
+
+        <div className="strip-divider" />
+
+        <div className="strip-item strip-item-right">
+          <button
+            className={`simple-status-btn ${paidCount === FIXED_UNITS.length ? "status-all-paid" : ""}`}
+            onClick={toggleAllPaid}
+            title="Click to toggle all units paid"
+          >
+            {paidCount === FIXED_UNITS.length ? (
+              <>
+                <Check size={14} /> {lang === "am" ? "9/9 ሙሉ ተከፍሏል" : "9/9 All Paid"}
+              </>
+            ) : (
+              <>
+                <Clock size={14} /> {paidCount} / 9 {lang === "am" ? "ተከፍሏል (ጠቅሰው ያዘምኑ)" : "Paid (Click all)"}
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+
+      {/* ─── 3. View Switcher Tabs (Simple & Minimal) ────────────────── */}
+      <div className="simple-view-tabs">
+        <button
+          className={`simple-tab-btn ${viewMode === "monthly" ? "simple-tab-active" : ""}`}
+          onClick={() => setViewMode("monthly")}
+        >
+          <Layers size={15} />
+          <span>{lang === "am" ? `${curMonthObj.nameAm} - ክፍያዎች` : `${curMonthObj.nameEn} List`}</span>
+        </button>
+
+        <button
+          className={`simple-tab-btn ${viewMode === "matrix" ? "simple-tab-active" : ""}`}
+          onClick={() => setViewMode("matrix")}
+        >
+          <FileSpreadsheet size={15} />
+          <span>{lang === "am" ? `${selectedYear} - 12 ወራት ሙሉ ሠንጠረዥ` : `${selectedYear} - 12 Months Matrix`}</span>
+        </button>
+      </div>
+
+      {/* ─── 4. VIEW A: CLEAN MONTHLY TABLE ───────────────────────────── */}
+      {viewMode === "monthly" && (
+        <div className="simple-card">
+          <div className="table-responsive">
+            <table className="clean-table">
               <thead>
                 <tr>
-                  <th style={{ minWidth: 140 }}>{t.tenantName}</th>
-                  <th style={{ minWidth: 120 }}>{t.ownerSplit}</th>
+                  <th style={{ width: 120 }}>Unit</th>
+                  <th>Tenant / ተከራይ</th>
+                  <th style={{ textAlign: "right" }}>Rent Amount</th>
+                  <th>Partner Split Allocation</th>
+                  <th style={{ textAlign: "center", width: 130 }}>Status</th>
+                  <th style={{ textAlign: "center", width: 70 }}>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {currentUnitRows.map((u) => {
+                  const isPaid = u.status === "paid";
+                  return (
+                    <tr key={u.id} className="clean-row">
+                      <td>
+                        <span className="unit-pill">{u.room}</span>
+                      </td>
+                      <td>
+                        <span className="tenant-title">
+                          {lang === "am" ? u.nameAm : u.nameEn}
+                        </span>
+                        <span className="tenant-subtitle">
+                          {lang === "am" ? u.nameEn : u.nameAm}
+                        </span>
+                      </td>
+                      <td style={{ textAlign: "right", fontWeight: 700, fontSize: "0.95rem", color: "#fff" }}>
+                        {fmt(u.rent)} <small style={{ color: "var(--text-muted)" }}>{t.etb}</small>
+                      </td>
+                      <td>
+                        <div className="clean-split-box">
+                          <span className="split-badge-clean">
+                            {lang === "am" ? u.splitAm : u.splitEn}
+                          </span>
+                          <span className="split-detail-numbers">
+                            {fmt(u.mesfin)} M / {fmt(u.zewdnesh)} Z
+                          </span>
+                        </div>
+                      </td>
+                      <td style={{ textAlign: "center" }}>
+                        <button
+                          className={`pill-status-btn ${isPaid ? "pill-paid" : "pill-pending"}`}
+                          onClick={() => toggleStatus(u.id)}
+                          title="Click to toggle Paid/Pending"
+                        >
+                          {isPaid ? (
+                            <>
+                              <CheckCircle2 size={13} /> {t.paid}
+                            </>
+                          ) : (
+                            <>
+                              <Clock size={13} /> {t.pending}
+                            </>
+                          )}
+                        </button>
+                      </td>
+                      <td style={{ textAlign: "center" }}>
+                        <button
+                          className="clean-edit-btn"
+                          onClick={() => openModal(u)}
+                          title="Edit amount or details via dropdown"
+                        >
+                          <Edit2 size={14} />
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+              <tfoot>
+                <tr className="clean-total-row">
+                  <td colSpan="2" style={{ fontWeight: 700 }}>
+                    {lang === "am" ? "ጠቅላላ ወርሃዊ ድምር" : "Total Monthly Rent"}
+                  </td>
+                  <td style={{ textAlign: "right", fontWeight: 800, color: "var(--indigo-light)", fontSize: "1.05rem" }}>
+                    {fmt(totalRent)} {t.etb}
+                  </td>
+                  <td>
+                    <span style={{ fontSize: "0.85rem", color: "#a5b4fc" }}>
+                      {fmt(totalMesfin)} M (63.8%) + {fmt(totalZewdnesh)} Z (36.2%)
+                    </span>
+                  </td>
+                  <td colSpan="2" style={{ textAlign: "center", color: "var(--emerald)", fontWeight: 600 }}>
+                    {paidCount} / {FIXED_UNITS.length} {lang === "am" ? "ተከፍሏል" : "Paid"}
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* ─── 5. VIEW B: 12-MONTH MATRIX (Excel Sheet Style) ─────────────── */}
+      {viewMode === "matrix" && (
+        <div className="simple-card">
+          <div className="table-responsive">
+            <table className="clean-table matrix-clean-table">
+              <thead>
+                <tr>
+                  <th style={{ minWidth: 140 }}>Unit & Tenant</th>
+                  <th style={{ minWidth: 110 }}>Split</th>
                   {FIXED_ETHIOPIAN_MONTHS.map((m) => (
-                    <th key={m.id} style={{ minWidth: 88, textAlign: "right" }}>
-                      <div>{lang === "am" ? m.nameAm : m.nameEn}</div>
-                      <div style={{ fontSize: "0.68rem", color: "var(--text-muted)", fontWeight: 400 }}>
-                        {m.dates.split("–")[0]}
-                      </div>
+                    <th key={m.id} style={{ minWidth: 85, textAlign: "right" }}>
+                      {lang === "am" ? m.nameAm : m.nameEn}
                     </th>
                   ))}
-                  <th style={{ minWidth: 110, textAlign: "right", background: "rgba(99, 102, 241, 0.15)" }}>
-                    {lang === "am" ? "ዓመታዊ ድምር" : "Annual Total"}
+                  <th style={{ minWidth: 100, textAlign: "right", color: "var(--indigo-light)" }}>
+                    {lang === "am" ? "ዓመታዊ" : "Annual"}
                   </th>
                 </tr>
               </thead>
               <tbody>
                 {FIXED_UNITS.map((u) => {
-                  let unitAnnualSum = 0;
+                  let annualSum = 0;
                   return (
-                    <tr key={u.id}>
-                      <td style={{ fontWeight: 600 }}>
-                        {lang === "am" ? u.nameAm : u.nameEn}
-                        <div style={{ fontSize: "0.72rem", color: "var(--text-muted)" }}>{u.room}</div>
-                      </td>
+                    <tr key={u.id} className="clean-row">
                       <td>
-                        <span className="split-badge-sm">
-                          {lang === "am" ? u.splitAm : u.splitEn}
-                        </span>
+                        <strong>{u.room}</strong>
+                        <div style={{ fontSize: "0.78rem", color: "var(--text-muted)" }}>
+                          {lang === "am" ? u.nameAm : u.nameEn}
+                        </div>
+                      </td>
+                      <td style={{ fontSize: "0.78rem", color: "var(--text-muted)" }}>
+                        {lang === "am" ? u.splitAm : u.splitEn}
                       </td>
                       {FIXED_ETHIOPIAN_MONTHS.map((m) => {
                         const p = currentSheet.months?.[m.id]?.[u.id] || { amount: u.defaultRent, status: "pending" };
-                        unitAnnualSum += Number(p.amount) || 0;
+                        annualSum += Number(p.amount) || 0;
                         const isP = p.status === "paid";
                         return (
                           <td
@@ -995,21 +643,21 @@ export default function MonthlyRents() {
                             }}
                           >
                             {fmt(p.amount)}
-                            {isP && <span style={{ color: "var(--emerald)", marginLeft: 3 }}>✓</span>}
+                            {isP && <span style={{ color: "var(--emerald)", marginLeft: 2 }}>✓</span>}
                           </td>
                         );
                       })}
-                      <td style={{ textAlign: "right", fontWeight: 700, color: "var(--indigo-light)", background: "rgba(99, 102, 241, 0.08)" }}>
-                        {fmt(unitAnnualSum)}
+                      <td style={{ textAlign: "right", fontWeight: 700, color: "var(--indigo-light)" }}>
+                        {fmt(annualSum)}
                       </td>
                     </tr>
                   );
                 })}
               </tbody>
               <tfoot>
-                <tr className="table-total-row">
+                <tr className="clean-total-row">
                   <td colSpan="2" style={{ fontWeight: 700 }}>
-                    {selectedYear} {lang === "am" ? "ወርሃዊ ድምር" : "Monthly Total"}
+                    {lang === "am" ? "ጠቅላላ ወርሃዊ ድምር" : "Monthly Total"}
                   </td>
                   {FIXED_ETHIOPIAN_MONTHS.map((m) => {
                     const mTotal = FIXED_UNITS.reduce((sum, u) => {
@@ -1022,46 +670,8 @@ export default function MonthlyRents() {
                       </td>
                     );
                   })}
-                  <td style={{ textAlign: "right", fontWeight: 800, color: "var(--indigo-light)", background: "rgba(99, 102, 241, 0.2)" }}>
-                    {fmt(annualSheetTotal.grand)} {t.etb}
-                  </td>
-                </tr>
-                <tr style={{ background: "rgba(99, 102, 241, 0.05)" }}>
-                  <td colSpan="2" style={{ color: "#818cf8", fontWeight: 600 }}>
-                    {lang === "am" ? "የመስፍን ድርሻ (Mesfin)" : "Mesfin Gross Share"}
-                  </td>
-                  {FIXED_ETHIOPIAN_MONTHS.map((m) => {
-                    const mesfinTotal = FIXED_UNITS.reduce((sum, u) => {
-                      const p = currentSheet.months?.[m.id]?.[u.id] || { mesfinShare: u.defaultRent * u.mesfinRatio };
-                      return sum + (Number(p.mesfinShare) || 0);
-                    }, 0);
-                    return (
-                      <td key={m.id} style={{ textAlign: "right", color: "#818cf8", fontSize: "0.85rem" }}>
-                        {fmt(mesfinTotal)}
-                      </td>
-                    );
-                  })}
-                  <td style={{ textAlign: "right", fontWeight: 700, color: "#818cf8" }}>
-                    {fmt(annualSheetTotal.mesfin)} {t.etb}
-                  </td>
-                </tr>
-                <tr style={{ background: "rgba(168, 85, 247, 0.05)" }}>
-                  <td colSpan="2" style={{ color: "#c084fc", fontWeight: 600 }}>
-                    {lang === "am" ? "የዘውድነሽ ድርሻ (Zewdnesh)" : "Zewdnesh Gross Share"}
-                  </td>
-                  {FIXED_ETHIOPIAN_MONTHS.map((m) => {
-                    const zewdneshTotal = FIXED_UNITS.reduce((sum, u) => {
-                      const p = currentSheet.months?.[m.id]?.[u.id] || { zewdneshShare: u.defaultRent * u.zewdneshRatio };
-                      return sum + (Number(p.zewdneshShare) || 0);
-                    }, 0);
-                    return (
-                      <td key={m.id} style={{ textAlign: "right", color: "#c084fc", fontSize: "0.85rem" }}>
-                        {fmt(zewdneshTotal)}
-                      </td>
-                    );
-                  })}
-                  <td style={{ textAlign: "right", fontWeight: 700, color: "#c084fc" }}>
-                    {fmt(annualSheetTotal.zewdnesh)} {t.etb}
+                  <td style={{ textAlign: "right", fontWeight: 800, color: "var(--indigo-light)" }}>
+                    {fmt(totalRent * 12)}
                   </td>
                 </tr>
               </tfoot>
@@ -1070,25 +680,21 @@ export default function MonthlyRents() {
         </div>
       )}
 
-      {/* 1. SINGLE RECORD PAYMENT MODAL (ALL DROPDOWNS - NO FREE TYPING) */}
+      {/* ─── MODAL 1: RECORD PAYMENT (STRICT DROPDOWNS ONLY) ─────────── */}
       {recordModalOpen && (
         <div className="modal-overlay" onClick={() => setRecordModalOpen(false)}>
-          <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+          <div className="simple-modal-card" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h3 className="modal-title">
-                {lang === "am" ? "የቤት ኪራይ ክፍያ መዝግብ" : "Record Rent Payment"}
-              </h3>
-              <button className="modal-close-btn" onClick={() => setRecordModalOpen(false)}>
+              <h3 className="modal-title">{lang === "am" ? "የቤት ኪራይ ክፍያ መዝግብ" : "Record Rent Payment"}</h3>
+              <button className="clean-close-btn" onClick={() => setRecordModalOpen(false)}>
                 <X size={18} />
               </button>
             </div>
 
-            <form onSubmit={handleSaveSingleRecord} className="modal-form">
-              {/* Dropdown 1: Fiscal Year Sheet */}
+            <form onSubmit={handleSaveModal} className="clean-modal-form">
+              {/* Year Dropdown */}
               <div className="field-group">
-                <label className="field-label">
-                  {lang === "am" ? "1. የበጀት ዓመት ሠንጠረዥ (Year Sheet)" : "1. Fiscal Year Sheet"}
-                </label>
+                <label className="field-label">{lang === "am" ? "1. የበጀት ዓመት ሠንጠረዥ" : "1. Fiscal Year Sheet"}</label>
                 <select
                   className="field-input"
                   value={formYear}
@@ -1102,11 +708,9 @@ export default function MonthlyRents() {
                 </select>
               </div>
 
-              {/* Dropdown 2: Ethiopian Month */}
+              {/* Month Dropdown */}
               <div className="field-group">
-                <label className="field-label">
-                  {lang === "am" ? "2. ወር ይምረጡ (Ethiopian Month)" : "2. Ethiopian Month"}
-                </label>
+                <label className="field-label">{lang === "am" ? "2. ወር ምረጥ" : "2. Month"}</label>
                 <select
                   className="field-input"
                   value={formMonth}
@@ -1120,15 +724,13 @@ export default function MonthlyRents() {
                 </select>
               </div>
 
-              {/* Dropdown 3: Fixed Unit / Tenant */}
+              {/* Unit Dropdown */}
               <div className="field-group">
-                <label className="field-label">
-                  {lang === "am" ? "3. ቋሚ ክፍል / ተከራይ ይምረጡ (Fixed Unit)" : "3. Fixed Unit / Tenant"}
-                </label>
+                <label className="field-label">{lang === "am" ? "3. ቋሚ ክፍል / ተከራይ" : "3. Fixed Unit / Tenant"}</label>
                 <select
                   className="field-input"
                   value={formUnitId}
-                  onChange={(e) => handleUnitDropdownChange(e.target.value)}
+                  onChange={(e) => handleUnitSelect(e.target.value)}
                 >
                   {FIXED_UNITS.map((u) => (
                     <option key={u.id} value={u.id}>
@@ -1138,11 +740,9 @@ export default function MonthlyRents() {
                 </select>
               </div>
 
-              {/* Amount (Auto-filled from unit default) */}
+              {/* Amount */}
               <div className="field-group">
-                <label className="field-label">
-                  {lang === "am" ? "የተከፈለ መጠን / Amount (ETB)" : "Rent Amount (ETB)"}
-                </label>
+                <label className="field-label">{lang === "am" ? "የኪራይ መጠን (ብር)" : "Rent Amount (ETB)"}</label>
                 <input
                   type="number"
                   className="field-input"
@@ -1153,25 +753,21 @@ export default function MonthlyRents() {
                 />
               </div>
 
-              {/* Auto Split Breakdown Display */}
-              <div className="auto-split-preview">
-                <div className="split-prev-row">
-                  <span>{lang === "am" ? "የክፍፍል ደንብ:" : "Split Rule:"}</span>
-                  <strong>{lang === "am" ? selectedUnitDef.splitAm : selectedUnitDef.splitEn}</strong>
+              {/* Auto Split Summary */}
+              <div className="clean-split-preview">
+                <div className="split-prev-item">
+                  <span>{lang === "am" ? "የመስፍን ድርሻ (Auto):" : "Mesfin (Auto):"}</span>
+                  <strong style={{ color: "#818cf8" }}>{fmt(formAmount * modalUnitObj.mesfinRatio)} ETB</strong>
                 </div>
-                <div className="split-prev-row">
-                  <span style={{ color: "#818cf8" }}>{lang === "am" ? "የመስፍን ድርሻ (Auto):" : "Mesfin Share (Auto):"}</span>
-                  <strong style={{ color: "#818cf8" }}>{fmt(formAmount * selectedUnitDef.mesfinRatio)} ETB</strong>
-                </div>
-                <div className="split-prev-row">
-                  <span style={{ color: "#c084fc" }}>{lang === "am" ? "የዘውድነሽ ድርሻ (Auto):" : "Zewdnesh Share (Auto):"}</span>
-                  <strong style={{ color: "#c084fc" }}>{fmt(formAmount * selectedUnitDef.zewdneshRatio)} ETB</strong>
+                <div className="split-prev-item">
+                  <span>{lang === "am" ? "የዘውድነሽ ድርሻ (Auto):" : "Zewdnesh (Auto):"}</span>
+                  <strong style={{ color: "#c084fc" }}>{fmt(formAmount * modalUnitObj.zewdneshRatio)} ETB</strong>
                 </div>
               </div>
 
-              {/* Dropdown 4: Payment Status */}
+              {/* Status Dropdown */}
               <div className="field-group">
-                <label className="field-label">{t.paymentStatus}</label>
+                <label className="field-label">{lang === "am" ? "የክፍያ ሁኔታ" : "Payment Status"}</label>
                 <select
                   className="field-input"
                   value={formStatus}
@@ -1182,7 +778,7 @@ export default function MonthlyRents() {
                 </select>
               </div>
 
-              <div style={{ display: "flex", gap: 10, marginTop: 10 }}>
+              <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
                 <button
                   type="button"
                   className="btn-secondary w-full"
@@ -1191,7 +787,7 @@ export default function MonthlyRents() {
                   {t.cancel}
                 </button>
                 <button type="submit" className="btn-primary w-full">
-                  <Check size={16} /> {lang === "am" ? "ክፍያውን መዝግብ" : "Save Record"}
+                  <Check size={16} /> {lang === "am" ? "አስቀምጥ" : "Save Record"}
                 </button>
               </div>
             </form>
@@ -1199,142 +795,26 @@ export default function MonthlyRents() {
         </div>
       )}
 
-      {/* 2. BATCH FULL MONTH RECORD MODAL */}
-      {batchModalOpen && (
-        <div className="modal-overlay" onClick={() => setBatchModalOpen(false)}>
-          <div className="modal-card modal-card--wide" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <div>
-                <h3 className="modal-title">
-                  {lang === "am"
-                    ? `የ${currentMonthObj.nameAm} (${selectedYear}) 9ኙንም ክፍሎች በአንድ ጊዜ መዝግብ`
-                    : `Record All 9 Units for ${currentMonthObj.nameEn} (${selectedYear})`}
-                </h3>
-                <p style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>
-                  {lang === "am"
-                    ? "ለወሩ የተከፈለውን መጠን እና ሁኔታ በአንድ ጠቅታ ያዘምኑ"
-                    : "Update amounts and toggle paid/pending status for all units simultaneously"}
-                </p>
-              </div>
-              <button className="modal-close-btn" onClick={() => setBatchModalOpen(false)}>
-                <X size={18} />
-              </button>
-            </div>
-
-            <form onSubmit={handleSaveBatchMonth}>
-              <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 12 }}>
-                <button
-                  type="button"
-                  className="btn-secondary"
-                  style={{ fontSize: "0.8rem", padding: "6px 12px" }}
-                  onClick={handleMarkAllBatchPaid}
-                >
-                  <CheckCircle2 size={14} style={{ color: "var(--emerald)" }} /> {lang === "am" ? "ሁሉንም እንደተከፈለ ምልክት አድርግ" : "Mark All as Paid"}
-                </button>
-              </div>
-
-              <div className="batch-table-wrap">
-                <table className="data-table">
-                  <thead>
-                    <tr>
-                      <th>Unit / Room</th>
-                      <th>Tenant</th>
-                      <th style={{ width: 140 }}>Rent Amount (ETB)</th>
-                      <th>Status Dropdown</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {FIXED_UNITS.map((u) => {
-                      const itemDraft = batchDraft[u.id] || { amount: u.defaultRent, status: "paid" };
-                      return (
-                        <tr key={u.id}>
-                          <td style={{ fontWeight: 600 }}>{u.room}</td>
-                          <td>
-                            <span>{lang === "am" ? u.nameAm : u.nameEn}</span>
-                            <div style={{ fontSize: "0.72rem", color: "var(--text-muted)" }}>
-                              {lang === "am" ? u.splitAm : u.splitEn}
-                            </div>
-                          </td>
-                          <td>
-                            <input
-                              type="number"
-                              className="field-input"
-                              style={{ padding: "6px 10px", fontSize: "0.85rem" }}
-                              value={itemDraft.amount}
-                              onChange={(e) => {
-                                const val = Number(e.target.value);
-                                setBatchDraft((prev) => ({
-                                  ...prev,
-                                  [u.id]: { ...prev[u.id], amount: val },
-                                }));
-                              }}
-                            />
-                          </td>
-                          <td>
-                            <select
-                              className="field-input"
-                              style={{ padding: "6px 10px", fontSize: "0.85rem" }}
-                              value={itemDraft.status}
-                              onChange={(e) => {
-                                const st = e.target.value;
-                                setBatchDraft((prev) => ({
-                                  ...prev,
-                                  [u.id]: { ...prev[u.id], status: st },
-                                }));
-                              }}
-                            >
-                              <option value="paid">{lang === "am" ? "ተከፍሏል (Paid)" : "Paid"}</option>
-                              <option value="pending">{lang === "am" ? "በመጠባበቅ ላይ (Pending)" : "Pending"}</option>
-                            </select>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-
-              <div style={{ display: "flex", gap: 10, marginTop: 16 }}>
-                <button
-                  type="button"
-                  className="btn-secondary w-full"
-                  onClick={() => setBatchModalOpen(false)}
-                >
-                  {t.cancel}
-                </button>
-                <button type="submit" className="btn-primary w-full">
-                  <Check size={16} /> {lang === "am" ? "ሁሉንም አዘምንና አስቀምጥ" : "Save All Payments"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* 3. NEW FISCAL YEAR SHEET MODAL */}
+      {/* ─── MODAL 2: ADD NEW FISCAL YEAR SHEET ───────────────────────── */}
       {newYearModalOpen && (
         <div className="modal-overlay" onClick={() => setNewYearModalOpen(false)}>
-          <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+          <div className="simple-modal-card" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h3 className="modal-title">
-                {lang === "am" ? "አዲስ የበጀት ዓመት ሠንጠረዥ ፍጠር" : "Create New Fiscal Year Sheet"}
-              </h3>
-              <button className="modal-close-btn" onClick={() => setNewYearModalOpen(false)}>
+              <h3 className="modal-title">{lang === "am" ? "አዲስ ዓመት ሠንጠረዥ ፍጠር" : "New Fiscal Year Sheet"}</h3>
+              <button className="clean-close-btn" onClick={() => setNewYearModalOpen(false)}>
                 <X size={18} />
               </button>
             </div>
 
-            <form onSubmit={handleCreateYearSheet} className="modal-form">
-              <p style={{ fontSize: "0.85rem", color: "var(--text-muted)", lineHeight: 1.5 }}>
+            <form onSubmit={handleAddYear} className="clean-modal-form">
+              <p style={{ fontSize: "0.84rem", color: "var(--text-muted)", lineHeight: 1.5 }}>
                 {lang === "am"
-                  ? "አዲስ ዓመት ሲፈጠር በኤክሴል እንዳለ አዲስ ሠንጠረዥ (Sheet) ይዘጋጃል። 9ኙም ቋሚ ክፍሎች እና 12ቱ ወራት በራስ-ሰር ይካተታሉ።"
-                  : "When a new year is created, a clean 12-month fiscal sheet is generated with all 9 fixed units ready for payment tracking."}
+                  ? "አዲስ ዓመት ሲፈጠር በ9ኙም ቋሚ ክፍሎች እና በ12ቱ ወራት የተዘጋጀ አዲስ ሠንጠረዥ ይከፈታል።"
+                  : "Generates a clean 12-month payment sheet for all 9 units in the new fiscal year."}
               </p>
 
               <div className="field-group">
-                <label className="field-label">
-                  {lang === "am" ? "የበጀት ዓመት ስም (Fiscal Year Name)" : "Fiscal Year Name"}
-                </label>
+                <label className="field-label">{lang === "am" ? "የበጀት ዓመት ስም" : "Fiscal Year Name"}</label>
                 <input
                   type="text"
                   className="field-input"
@@ -1345,7 +825,7 @@ export default function MonthlyRents() {
                 />
               </div>
 
-              <div style={{ display: "flex", gap: 10, marginTop: 10 }}>
+              <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
                 <button
                   type="button"
                   className="btn-secondary w-full"
@@ -1354,7 +834,7 @@ export default function MonthlyRents() {
                   {t.cancel}
                 </button>
                 <button type="submit" className="btn-primary w-full">
-                  <FolderPlus size={16} /> {lang === "am" ? "ሠንጠረዡን ፍጠር" : "Create Year Sheet"}
+                  <FolderPlus size={16} /> {lang === "am" ? "ፍጠር" : "Create Sheet"}
                 </button>
               </div>
             </form>
