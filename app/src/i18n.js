@@ -53,6 +53,13 @@ export const translations = {
     calculatedMesfinShare: "Mesfin's Share (Auto)",
     calculatedZewdneshShare: "Zewdnesh's Share (Auto)",
     yearSheetsCount: "Year Sheets",
+    approveMonth: "Approve Month",
+    monthApproved: "Approved",
+    approvalCodePrompt: "Enter 4-Digit Security Code (8998)",
+    confirmApproval: "Confirm & Approve",
+    invalidCode: "Invalid security code. Please enter 8998.",
+    approvedSuccess: "Monthly rental income approved and locked.",
+    unlockMonth: "Unlock Month",
 
     // Auth
     signIn: "Sign In",
@@ -186,6 +193,13 @@ export const translations = {
     calculatedMesfinShare: "የመስፍን ድርሻ (የተሰላ)",
     calculatedZewdneshShare: "የዘውድነሽ ድርሻ (የተሰላ)",
     yearSheetsCount: "የዓመታት ሠንጠረዦች",
+    approveMonth: "ወሩን አጽድቅ",
+    monthApproved: "ጸድቋል",
+    approvalCodePrompt: "የማረጋገጫ ባለ 4-አሃዝ ኮድ ያስገቡ (8998)",
+    confirmApproval: "አረጋግጥ እና አጽድቅ",
+    invalidCode: "የተሳሳተ ኮድ ነው። እባክዎ 8998 ያስገቡ።",
+    approvedSuccess: "የወሩ የቤት ኪራይ ገቢ ጸድቋል።",
+    unlockMonth: "ማረጋገጫ አንሳ",
 
     // Auth
     signIn: "ግባ",

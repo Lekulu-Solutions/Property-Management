@@ -17,6 +17,10 @@ import {
   Users,
   Building2,
   FolderPlus,
+  ShieldCheck,
+  Lock,
+  Unlock,
+  KeyRound,
 } from "lucide-react";
 
 // Fixed 12 Ethiopian Fiscal Months from Resource/Data.xlsx
@@ -197,6 +201,10 @@ export default function MonthlyRents() {
   // Modals
   const [recordModalOpen, setRecordModalOpen] = useState(false);
   const [newYearModalOpen, setNewYearModalOpen] = useState(false);
+  const [approveModalOpen, setApproveModalOpen] = useState(false);
+  const [approveCodeInput, setApproveCodeInput] = useState("");
+  const [approveError, setApproveError] = useState("");
+  const [bannerMessage, setBannerMessage] = useState("");
 
   // Dropdown-Only Form State
   const [formYear, setFormYear] = useState("2019 E.C.");
@@ -318,6 +326,92 @@ export default function MonthlyRents() {
     });
   };
 
+  const isMonthApproved = currentSheet.months?.[selectedMonth]?.approved === true;
+
+  // Confirm approval with code 8998
+  const handleConfirmApproval = (e) => {
+    e.preventDefault();
+    if (approveCodeInput.trim() !== "8998") {
+      setApproveError(t.invalidCode || "Invalid security code. Please enter 8998.");
+      return;
+    }
+
+    setYearSheets((prev) => {
+      const yObj = prev[selectedYear] || createDefaultYearSheet(selectedYear);
+      const mObj = yObj.months || {};
+      const targetMonth = mObj[selectedMonth] || {};
+
+      const updatedUnits = {};
+      FIXED_UNITS.forEach((u) => {
+        const p = targetMonth[u.id] || { amount: u.defaultRent };
+        updatedUnits[u.id] = {
+          amount: p.amount,
+          status: "paid",
+          mesfinShare: p.amount * u.mesfinRatio,
+          zewdneshShare: p.amount * u.zewdneshRatio,
+        };
+      });
+
+      const updatedYear = {
+        ...yObj,
+        months: {
+          ...mObj,
+          [selectedMonth]: {
+            ...updatedUnits,
+            approved: true,
+            approvedAt: new Date().toISOString(),
+          },
+        },
+      };
+
+      try {
+        setDoc(doc(db, "yearly_rent_sheets", selectedYear), updatedYear, { merge: true }).catch(() => {});
+      } catch {}
+
+      return {
+        ...prev,
+        [selectedYear]: updatedYear,
+      };
+    });
+
+    setApproveModalOpen(false);
+    setBannerMessage(
+      lang === "am"
+        ? `የ${curMonthObj.nameAm} (${selectedYear}) የቤት ኪራይ ገቢ በስኬት ጸድቋል!`
+        : `${curMonthObj.nameEn} (${selectedYear}) rental income approved and confirmed!`
+    );
+    setTimeout(() => setBannerMessage(""), 4500);
+  };
+
+  const handleUnlockMonth = () => {
+    const code = window.prompt(
+      lang === "am" ? "ማረጋገጫ ለማንሳት ኮድ ያስገቡ (8998):" : "Enter code to unlock (8998):"
+    );
+    if (code === "8998") {
+      setYearSheets((prev) => {
+        const yObj = prev[selectedYear] || createDefaultYearSheet(selectedYear);
+        const mObj = yObj.months || {};
+        const targetMonth = mObj[selectedMonth] || {};
+        const updatedYear = {
+          ...yObj,
+          months: {
+            ...mObj,
+            [selectedMonth]: {
+              ...targetMonth,
+              approved: false,
+            },
+          },
+        };
+        try {
+          setDoc(doc(db, "yearly_rent_sheets", selectedYear), updatedYear, { merge: true }).catch(() => {});
+        } catch {}
+        return { ...prev, [selectedYear]: updatedYear };
+      });
+    } else if (code !== null) {
+      alert("Invalid code! (Must be 8998)");
+    }
+  };
+
   // Open modal with unit pre-selected
   const openModal = (unit = null) => {
     setFormYear(selectedYear);
@@ -431,6 +525,14 @@ export default function MonthlyRents() {
         </div>
       </div>
 
+      {/* Success Notification Banner */}
+      {bannerMessage && (
+        <div className="success-notification-bar">
+          <CheckCircle2 size={16} />
+          <span>{bannerMessage}</span>
+        </div>
+      )}
+
       {/* ─── 2. Compact Financial Summary Bar ─────────────────────────── */}
       <div className="simple-summary-strip">
         <div className="strip-item">
@@ -461,21 +563,54 @@ export default function MonthlyRents() {
         <div className="strip-divider" />
 
         <div className="strip-item strip-item-right">
-          <button
-            className={`simple-status-btn ${paidCount === FIXED_UNITS.length ? "status-all-paid" : ""}`}
-            onClick={toggleAllPaid}
-            title="Click to toggle all units paid"
-          >
-            {paidCount === FIXED_UNITS.length ? (
-              <>
-                <Check size={14} /> {lang === "am" ? "9/9 ሙሉ ተከፍሏል" : "9/9 All Paid"}
-              </>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+            {/* Click All Paid Button */}
+            <button
+              className={`simple-status-btn ${paidCount === FIXED_UNITS.length ? "status-all-paid" : ""}`}
+              onClick={toggleAllPaid}
+              title="Click to toggle all units paid"
+            >
+              {paidCount === FIXED_UNITS.length ? (
+                <>
+                  <Check size={14} /> {lang === "am" ? "9/9 ሙሉ ተከፍሏል" : "9/9 All Paid"}
+                </>
+              ) : (
+                <>
+                  <Clock size={14} /> {paidCount} / 9 {lang === "am" ? "ተከፍሏል (ጠቅሰው ያዘምኑ)" : "Paid (Click all)"}
+                </>
+              )}
+            </button>
+
+            {/* Action Button: Approve Month (Security Code: 8998) */}
+            {isMonthApproved ? (
+              <div className="approved-seal-badge">
+                <ShieldCheck size={15} style={{ color: "#34d399" }} />
+                <span>{lang === "am" ? "ጸድቋል (Approved)" : "Approved"}</span>
+                <button
+                  type="button"
+                  className="unlock-mini-btn"
+                  onClick={handleUnlockMonth}
+                  title="Unlock month (requires 8998)"
+                >
+                  <Unlock size={12} />
+                </button>
+              </div>
             ) : (
-              <>
-                <Clock size={14} /> {paidCount} / 9 {lang === "am" ? "ተከፍሏል (ጠቅሰው ያዘምኑ)" : "Paid (Click all)"}
-              </>
+              <button
+                type="button"
+                id="approve-month-btn"
+                className="simple-approve-btn"
+                onClick={() => {
+                  setApproveCodeInput("");
+                  setApproveError("");
+                  setApproveModalOpen(true);
+                }}
+                title="Confirm and lock with security code 8998"
+              >
+                <ShieldCheck size={15} /> {lang === "am" ? "ወሩን አጽድቅ (8998)" : "Approve (8998)"}
+              </button>
             )}
-          </button>
+          </div>
         </div>
       </div>
 
@@ -835,6 +970,92 @@ export default function MonthlyRents() {
                 </button>
                 <button type="submit" className="btn-primary w-full">
                   <FolderPlus size={16} /> {lang === "am" ? "ፍጠር" : "Create Sheet"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ─── MODAL 3: APPROVE MONTH SECURITY CODE MODAL (Code: 8998) ─── */}
+      {approveModalOpen && (
+        <div className="modal-overlay" onClick={() => setApproveModalOpen(false)}>
+          <div className="simple-modal-card" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <ShieldCheck size={20} style={{ color: "var(--indigo-light)" }} />
+                <h3 className="modal-title">
+                  {lang === "am" ? "የወር ኪራይ ገቢን ማጽደቅ" : "Approve Monthly Rent Income"}
+                </h3>
+              </div>
+              <button className="clean-close-btn" onClick={() => setApproveModalOpen(false)}>
+                <X size={18} />
+              </button>
+            </div>
+
+            <form onSubmit={handleConfirmApproval} className="clean-modal-form">
+              <div className="clean-split-preview" style={{ flexDirection: "column", gap: 8 }}>
+                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                  <span style={{ color: "var(--text-muted)" }}>
+                    {lang === "am" ? "የበጀት ዓመት / ወር:" : "Fiscal Month:"}
+                  </span>
+                  <strong>{curMonthObj.nameEn} ({curMonthObj.nameAm}) {selectedYear}</strong>
+                </div>
+                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                  <span style={{ color: "var(--text-muted)" }}>
+                    {lang === "am" ? "የሚጸድቀው ጠቅላላ ኪራይ:" : "Total Rent to Confirm:"}
+                  </span>
+                  <strong style={{ color: "var(--emerald)", fontSize: "1rem" }}>{fmt(totalRent)} ETB</strong>
+                </div>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.8rem", paddingTop: 4, borderTop: "1px dashed rgba(255,255,255,0.08)" }}>
+                  <span style={{ color: "#818cf8" }}>{fmt(totalMesfin)} ETB (Mesfin)</span>
+                  <span style={{ color: "#c084fc" }}>{fmt(totalZewdnesh)} ETB (Zewdnesh)</span>
+                </div>
+              </div>
+
+              {approveError && (
+                <div className="error-banner" style={{ marginTop: 4 }}>
+                  {approveError}
+                </div>
+              )}
+
+              <div className="field-group" style={{ marginTop: 6 }}>
+                <label className="field-label" style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <KeyRound size={14} /> {lang === "am" ? "የማረጋገጫ ኮድ (Security Code)" : "Approval Security Code"}
+                </label>
+                <input
+                  type="password"
+                  className="field-input"
+                  style={{ textAlign: "center", fontSize: "1.3rem", letterSpacing: "0.3em", fontWeight: 700 }}
+                  placeholder="••••"
+                  maxLength={4}
+                  value={approveCodeInput}
+                  onChange={(e) => {
+                    setApproveCodeInput(e.target.value);
+                    setApproveError("");
+                  }}
+                  autoFocus
+                  required
+                />
+                <span style={{ fontSize: "0.76rem", color: "var(--text-muted)", textAlign: "center", marginTop: 2 }}>
+                  🔑 {lang === "am" ? "የማረጋገጫ ኮድ: 8998" : "Enter code: 8998 to confirm & lock"}
+                </span>
+              </div>
+
+              <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
+                <button
+                  type="button"
+                  className="btn-secondary w-full"
+                  onClick={() => setApproveModalOpen(false)}
+                >
+                  {t.cancel}
+                </button>
+                <button
+                  type="submit"
+                  className="btn-primary w-full"
+                  style={{ background: "linear-gradient(135deg, #10b981, #059669)" }}
+                >
+                  <Check size={16} /> {lang === "am" ? "አረጋግጥና አጽድቅ" : "Confirm & Approve"}
                 </button>
               </div>
             </form>
