@@ -212,6 +212,7 @@ export default function MonthlyRents() {
   const [formUnitId, setFormUnitId] = useState("unit-01");
   const [formAmount, setFormAmount] = useState(7000);
   const [formStatus, setFormStatus] = useState("paid");
+  const [formDate, setFormDate] = useState(() => new Date().toISOString().split("T")[0]);
   const [newYearInput, setNewYearInput] = useState("");
 
   // Sync to localStorage
@@ -260,6 +261,7 @@ export default function MonthlyRents() {
         mesfin: p.mesfinShare,
         zewdnesh: p.zewdneshShare,
         status: p.status || "pending",
+        date: p.date,
       };
     });
   }, [currentMonthPayments]);
@@ -287,7 +289,7 @@ export default function MonthlyRents() {
     });
   };
 
-  const updatePayment = (year, month, unitId, amount, status) => {
+  const updatePayment = (year, month, unitId, amount, status, date) => {
     const uDef = FIXED_UNITS.find((u) => u.id === unitId);
     if (!uDef) return;
     const amt = Number(amount) || 0;
@@ -298,6 +300,8 @@ export default function MonthlyRents() {
       const yObj = prev[year] || createDefaultYearSheet(year);
       const mObj = yObj.months || {};
       const targetMonth = mObj[month] || {};
+      const existingPayment = targetMonth[unitId] || {};
+      const recordDate = date || existingPayment.date || new Date().toISOString().split("T")[0];
 
       const updatedYear = {
         ...yObj,
@@ -310,6 +314,7 @@ export default function MonthlyRents() {
               status,
               mesfinShare: mShare,
               zewdneshShare: zShare,
+              date: recordDate,
             },
           },
         },
@@ -421,6 +426,7 @@ export default function MonthlyRents() {
     const existing = currentMonthPayments[u.id];
     setFormAmount(existing ? existing.amount : u.defaultRent);
     setFormStatus(existing ? existing.status : "paid");
+    setFormDate(existing?.date || new Date().toISOString().split("T")[0]);
     setRecordModalOpen(true);
   };
 
@@ -431,12 +437,13 @@ export default function MonthlyRents() {
       const existing = yearSheets[formYear]?.months?.[formMonth]?.[unitId];
       setFormAmount(existing ? existing.amount : u.defaultRent);
       setFormStatus(existing ? existing.status : "paid");
+      setFormDate(existing?.date || new Date().toISOString().split("T")[0]);
     }
   };
 
   const handleSaveModal = (e) => {
     e.preventDefault();
-    updatePayment(formYear, formMonth, formUnitId, formAmount, formStatus);
+    updatePayment(formYear, formMonth, formUnitId, formAmount, formStatus, formDate);
     setRecordModalOpen(false);
   };
 
@@ -678,21 +685,28 @@ export default function MonthlyRents() {
                         </div>
                       </td>
                       <td style={{ textAlign: "center" }}>
-                        <button
-                          className={`pill-status-btn ${isPaid ? "pill-paid" : "pill-pending"}`}
-                          onClick={() => toggleStatus(u.id)}
-                          title="Click to toggle Paid/Pending"
-                        >
-                          {isPaid ? (
-                            <>
-                              <CheckCircle2 size={13} /> {t.paid}
-                            </>
-                          ) : (
-                            <>
-                              <Clock size={13} /> {t.pending}
-                            </>
+                        <div style={{ display: "inline-flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
+                          <button
+                            className={`pill-status-btn ${isPaid ? "pill-paid" : "pill-pending"}`}
+                            onClick={() => toggleStatus(u.id)}
+                            title="Click to toggle Paid/Pending"
+                          >
+                            {isPaid ? (
+                              <>
+                                <CheckCircle2 size={13} /> {t.paid}
+                              </>
+                            ) : (
+                              <>
+                                <Clock size={13} /> {t.pending}
+                              </>
+                            )}
+                          </button>
+                          {isPaid && u.date && (
+                            <span style={{ fontSize: "0.72rem", color: "var(--text-muted)", display: "flex", alignItems: "center", gap: 3 }}>
+                              <Calendar size={10} /> {u.date}
+                            </span>
                           )}
-                        </button>
+                        </div>
                       </td>
                       <td style={{ textAlign: "center" }}>
                         <button
@@ -898,6 +912,20 @@ export default function MonthlyRents() {
                   <span>{lang === "am" ? "የዘውድነሽ ድርሻ (Auto):" : "Zewdnesh (Auto):"}</span>
                   <strong style={{ color: "#c084fc" }}>{fmt(formAmount * modalUnitObj.zewdneshRatio)} ETB</strong>
                 </div>
+              </div>
+
+              {/* Calendar Date Input */}
+              <div className="field-group">
+                <label className="field-label" style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                  <Calendar size={14} style={{ color: "var(--indigo-light)" }} /> {lang === "am" ? "የክፍያ ቀን (Calendar Date)" : "Payment Calendar Date"}
+                </label>
+                <input
+                  type="date"
+                  className="field-input"
+                  value={formDate}
+                  onChange={(e) => setFormDate(e.target.value)}
+                  required
+                />
               </div>
 
               {/* Status Dropdown */}

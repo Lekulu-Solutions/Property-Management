@@ -2,7 +2,7 @@ import { NavLink } from "react-router-dom";
 import { useLang } from "../context/AppContext";
 import {
   LayoutDashboard, Home, Wallet, Users, ShoppingBasket,
-  Calculator, Settings, Building2, Globe,
+  Calculator, Settings, Building2, Globe, Coins, Calendar,
 } from "lucide-react";
 
 export default function Sidebar({ collapsed, onToggle }) {
@@ -10,6 +10,7 @@ export default function Sidebar({ collapsed, onToggle }) {
 
   const links = [
     { to: "/", icon: LayoutDashboard, label: t.dashboard },
+    { to: "/cashflow", icon: Coins, label: t.cashFlow || "Cash Flow (ቤቶች)" },
     { to: "/rents", icon: Home, label: t.monthlyRents },
     { to: "/mesfin", icon: Wallet, label: t.mesfin },
     { to: "/zewdnesh", icon: Users, label: t.zewdnesh },

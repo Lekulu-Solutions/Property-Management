@@ -4,7 +4,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../firebase";
 import { useLang } from "../context/AppContext";
-import { Plus, Pencil, Trash2, X, Check, ShoppingCart, Receipt } from "lucide-react";
+import { Plus, Pencil, Trash2, X, Check, ShoppingCart, Receipt, Calendar } from "lucide-react";
 
 const CATEGORIES = {
   groceries: { en: "Groceries / አስቤዛ", icon: "🛒" },
@@ -30,7 +30,12 @@ export default function Expenses() {
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState(null);
   const [activeTab, setActiveTab] = useState("all");
-  const [form, setForm] = useState({ description: "", amount: "", category: "groceries" });
+  const [form, setForm] = useState({
+    description: "",
+    amount: "",
+    category: "groceries",
+    date: new Date().toISOString().split("T")[0],
+  });
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [seeding, setSeeding] = useState(false);
 
@@ -56,7 +61,12 @@ export default function Expenses() {
   }
 
   function resetForm() {
-    setForm({ description: "", amount: "", category: "groceries" });
+    setForm({
+      description: "",
+      amount: "",
+      category: "groceries",
+      date: new Date().toISOString().split("T")[0],
+    });
     setEditId(null);
     setShowForm(false);
   }
@@ -64,10 +74,12 @@ export default function Expenses() {
   async function handleSave() {
     const amount = parseFloat(form.amount);
     if (!form.description) return;
+    const dateVal = form.date || new Date().toISOString().split("T")[0];
     const payload = {
       description: form.description,
       amount: isNaN(amount) ? 0 : amount,
       category: form.category,
+      date: dateVal,
       updatedAt: serverTimestamp(),
     };
     if (editId) {
@@ -79,7 +91,13 @@ export default function Expenses() {
   }
 
   function startEdit(entry) {
-    setForm({ description: entry.description, amount: String(entry.amount || ""), category: entry.category || "other" });
+    const defaultDate = entry.date || (entry.createdAt?.toDate ? entry.createdAt.toDate().toISOString().split("T")[0] : new Date().toISOString().split("T")[0]);
+    setForm({
+      description: entry.description,
+      amount: String(entry.amount || ""),
+      category: entry.category || "other",
+      date: defaultDate,
+    });
     setEditId(entry.id);
     setShowForm(true);
   }
@@ -179,6 +197,18 @@ export default function Expenses() {
                 ))}
               </select>
             </div>
+            <div className="field-group">
+              <label className="field-label" style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                <Calendar size={14} style={{ color: "var(--indigo-light)" }} /> {t.calendarDate || "Calendar Date"}
+              </label>
+              <input
+                className="field-input"
+                type="date"
+                value={form.date}
+                onChange={(e) => setForm((f) => ({ ...f, date: e.target.value }))}
+                required
+              />
+            </div>
           </div>
           <div className="form-actions">
             <button className="btn-ghost" onClick={resetForm}><X size={15} /> {t.cancel}</button>
@@ -221,6 +251,7 @@ export default function Expenses() {
               <tr>
                 <th>{t.item}</th>
                 <th>{t.category}</th>
+                <th>{t.date || "Date / ቀን"}</th>
                 <th className="text-right">{t.price}</th>
                 <th />
               </tr>
@@ -232,6 +263,11 @@ export default function Expenses() {
                   <td>
                     <span className="badge badge--blue">
                       {CATEGORIES[e.category]?.icon} {CATEGORIES[e.category]?.en || e.category}
+                    </span>
+                  </td>
+                  <td>
+                    <span className="badge" style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "rgba(255,255,255,0.06)", color: "var(--text-muted)", fontSize: "0.8rem" }}>
+                      <Calendar size={12} /> {e.date || (e.createdAt?.toDate ? e.createdAt.toDate().toISOString().split("T")[0] : "—")}
                     </span>
                   </td>
                   <td className="text-right font-mono">
@@ -248,7 +284,7 @@ export default function Expenses() {
             </tbody>
             <tfoot>
               <tr className="table-foot">
-                <td colSpan={2}>{t.total}</td>
+                <td colSpan={3}>{t.total}</td>
                 <td className="text-right font-mono">{fmt(totalFiltered)}</td>
                 <td />
               </tr>

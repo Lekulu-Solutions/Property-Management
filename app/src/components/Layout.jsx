@@ -7,6 +7,7 @@ import AccountLedger from "../pages/AccountLedger";
 import Expenses from "../pages/Expenses";
 import DistributionCalc from "../pages/DistributionCalc";
 import Settings from "../pages/Settings";
+import CashFlowBetoch from "../pages/CashFlowBetoch";
 
 export default function Layout() {
   const [collapsed, setCollapsed] = useState(false);
@@ -17,6 +18,8 @@ export default function Layout() {
       <main className="main-content">
         <Routes>
           <Route path="/" element={<Dashboard />} />
+          <Route path="/cashflow" element={<CashFlowBetoch />} />
+          <Route path="/betoch" element={<CashFlowBetoch />} />
           <Route path="/rents" element={<MonthlyRents />} />
           <Route path="/mesfin" element={<AccountLedger partner="mesfin" />} />
           <Route path="/zewdnesh" element={<AccountLedger partner="zewdnesh" />} />

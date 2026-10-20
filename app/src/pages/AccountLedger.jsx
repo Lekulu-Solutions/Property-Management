@@ -4,7 +4,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../firebase";
 import { useLang } from "../context/AppContext";
-import { Plus, Pencil, Trash2, X, Check, TrendingUp, TrendingDown } from "lucide-react";
+import { Plus, Pencil, Trash2, X, Check, TrendingUp, TrendingDown, Calendar } from "lucide-react";
 
 // partner = "mesfin" | "zewdnesh"
 export default function AccountLedger({ partner }) {
@@ -13,7 +13,13 @@ export default function AccountLedger({ partner }) {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState(null);
-  const [form, setForm] = useState({ description: "", amount: "", type: "deposit", month: "" });
+  const [form, setForm] = useState({
+    description: "",
+    amount: "",
+    type: "deposit",
+    month: "",
+    date: new Date().toISOString().split("T")[0],
+  });
   const [deleteTarget, setDeleteTarget] = useState(null);
 
   const colName = partner === "mesfin" ? "mesfin_account" : "zewdnesh_account";
@@ -40,7 +46,13 @@ export default function AccountLedger({ partner }) {
   const totalDeductions = entries.filter((e) => e.type === "deduction").reduce((s, e) => s + Math.abs(e.amount || 0), 0);
 
   function resetForm() {
-    setForm({ description: "", amount: "", type: "deposit", month: "" });
+    setForm({
+      description: "",
+      amount: "",
+      type: "deposit",
+      month: "",
+      date: new Date().toISOString().split("T")[0],
+    });
     setEditId(null);
     setShowForm(false);
   }
@@ -48,11 +60,13 @@ export default function AccountLedger({ partner }) {
   async function handleSave() {
     const amount = parseFloat(form.amount);
     if (!form.description || isNaN(amount)) return;
+    const dateVal = form.date || new Date().toISOString().split("T")[0];
     const payload = {
       description: form.description,
       amount: Math.abs(amount),
       type: form.type,
       month: form.month,
+      date: dateVal,
       order: editId
         ? (entries.find((e) => e.id === editId)?.order || 0)
         : entries.length,
@@ -67,11 +81,13 @@ export default function AccountLedger({ partner }) {
   }
 
   function startEdit(entry) {
+    const defaultDate = entry.date || (entry.createdAt?.toDate ? entry.createdAt.toDate().toISOString().split("T")[0] : new Date().toISOString().split("T")[0]);
     setForm({
       description: entry.description,
       amount: String(entry.amount),
       type: entry.type,
       month: entry.month || "",
+      date: defaultDate,
     });
     setEditId(entry.id);
     setShowForm(true);
@@ -167,6 +183,18 @@ export default function AccountLedger({ partner }) {
               />
             </div>
             <div className="field-group">
+              <label className="field-label" style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                <Calendar size={14} style={{ color: "var(--indigo-light)" }} /> {t.calendarDate || "Calendar Date"}
+              </label>
+              <input
+                className="field-input"
+                type="date"
+                value={form.date}
+                onChange={(e) => setForm((f) => ({ ...f, date: e.target.value }))}
+                required
+              />
+            </div>
+            <div className="field-group">
               <label className="field-label">{t.amount}</label>
               <input
                 className="field-input"
@@ -221,6 +249,7 @@ export default function AccountLedger({ partner }) {
             <thead>
               <tr>
                 <th>{t.month}</th>
+                <th>{t.date || "Date / ቀን"}</th>
                 <th>{t.description}</th>
                 <th>{t.type}</th>
                 <th className="text-right">{t.amount}</th>
@@ -232,6 +261,11 @@ export default function AccountLedger({ partner }) {
               {withBalance.map((entry) => (
                 <tr key={entry.id} className="table-row">
                   <td className="td-month">{entry.month || "—"}</td>
+                  <td>
+                    <span className="badge" style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "rgba(255,255,255,0.06)", color: "var(--text-muted)", fontSize: "0.8rem" }}>
+                      <Calendar size={12} /> {entry.date || "—"}
+                    </span>
+                  </td>
                   <td>{entry.description}</td>
                   <td>
                     <span className={`badge ${entry.type === "deposit" ? "badge--green" : "badge--red"}`}>
@@ -259,7 +293,7 @@ export default function AccountLedger({ partner }) {
             </tbody>
             <tfoot>
               <tr className="table-foot">
-                <td colSpan={3}>{t.total}</td>
+                <td colSpan={4}>{t.total}</td>
                 <td className="text-right font-mono">{fmt(totalDeposits - totalDeductions)}</td>
                 <td className={`text-right font-mono ${totalBalance >= 0 ? "text-green" : "text-red"}`}>
                   {fmt(totalBalance)}
