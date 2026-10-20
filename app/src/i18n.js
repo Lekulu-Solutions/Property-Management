@@ -13,9 +13,9 @@ export const translations = {
     settings: "Settings",
     logout: "Sign Out",
 
-    // Monthly Rent
+    // Monthly Rent & Yearly Sheets
     monthlyRentsTitle: "Monthly Rental Income & Tenants",
-    monthlyRentsSubtitle: "Track monthly rent collections, tenant directory, and owner splits (2019 E.C.)",
+    monthlyRentsSubtitle: "Track monthly rent collections, tenant directory, and owner splits across fiscal year sheets",
     tenantName: "Tenant / Unit",
     tenantCategory: "Unit Category",
     monthlyRent: "Monthly Rent",
@@ -38,6 +38,21 @@ export const translations = {
     addTenant: "Add Tenant / Unit",
     editTenant: "Edit Tenant",
     selectMonth: "Select Month",
+    fiscalYear: "Fiscal Year Sheet",
+    selectYearSheet: "Select Year Sheet",
+    newYearSheet: "New Year Sheet",
+    addYearSheetTitle: "Create New Fiscal Year Sheet",
+    enterYearName: "Fiscal Year (e.g., 2020 E.C.)",
+    recordRentPayment: "Record Rent Payment",
+    recordFullMonth: "Record All Units for Month",
+    markAllPaid: "Mark All as Paid",
+    selectUnitDropdown: "Select Fixed Unit / Tenant",
+    selectMonthDropdown: "Select Ethiopian Month",
+    selectYearDropdown: "Select Fiscal Year",
+    paymentAmount: "Rent Amount (ETB)",
+    calculatedMesfinShare: "Mesfin's Share (Auto)",
+    calculatedZewdneshShare: "Zewdnesh's Share (Auto)",
+    yearSheetsCount: "Year Sheets",
 
     // Auth
     signIn: "Sign In",
@@ -131,9 +146,9 @@ export const translations = {
     settings: "ቅንብሮች",
     logout: "ውጣ",
 
-    // Monthly Rent
+    // Monthly Rent & Yearly Sheets
     monthlyRentsTitle: "ወርሃዊ የቤት ኪራይ ገቢ እና ተከራዮች",
-    monthlyRentsSubtitle: "ወርሃዊ የኪራይ ገቢ፣ የተከራዮች ዝርዝር እና የባለቤቶች ክፍፍል (2019 ዓ.ም.)",
+    monthlyRentsSubtitle: "ወርሃዊ የኪራይ ገቢ፣ የተከራዮች ዝርዝር እና የባለቤቶች ክፍፍል በየበጀት ዓመቱ ሠንጠረዥ",
     tenantName: "ተከራይ / ክፍል",
     tenantCategory: "የክፍል አይነት",
     monthlyRent: "ወርሃዊ ኪራይ",
@@ -156,6 +171,21 @@ export const translations = {
     addTenant: "ተከራይ / ክፍል አክል",
     editTenant: "ተከራይ አርትዕ",
     selectMonth: "ወር ምረጥ",
+    fiscalYear: "የበጀት ዓመት ሠንጠረዥ",
+    selectYearSheet: "የዓመት ሠንጠረዥ ምረጥ",
+    newYearSheet: "አዲስ የዓመት ሠንጠረዥ",
+    addYearSheetTitle: "አዲስ የበጀት ዓመት ሠንጠረዥ ፍጠር",
+    enterYearName: "የበጀት ዓመት (ለምሳሌ፡ 2020 ዓ.ም.)",
+    recordRentPayment: "የቤት ኪራይ ክፍያ መዝግብ",
+    recordFullMonth: "የወሩን ክፍያዎች በአንድ ጊዜ መዝግብ",
+    markAllPaid: "ሁሉንም እንደተከፈለ ምልክት አድርግ",
+    selectUnitDropdown: "ቋሚ ክፍል / ተከራይ ይምረጡ",
+    selectMonthDropdown: "የኢትዮጵያ ወር ይምረጡ",
+    selectYearDropdown: "የበጀት ዓመት ይምረጡ",
+    paymentAmount: "የተከፈለ መጠን (ብር)",
+    calculatedMesfinShare: "የመስፍን ድርሻ (የተሰላ)",
+    calculatedZewdneshShare: "የዘውድነሽ ድርሻ (የተሰላ)",
+    yearSheetsCount: "የዓመታት ሠንጠረዦች",
 
     // Auth
     signIn: "ግባ",

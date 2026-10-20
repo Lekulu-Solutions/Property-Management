@@ -1457,3 +1457,109 @@ select.field-input { cursor: pointer; }
   gap: 14px;
 }
 
+.modal-card--wide {
+  max-width: 680px;
+}
+
+/* ─── Year Sheets Bar (Spreadsheet Tabs) ───────────────────────── */
+.year-sheets-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 8px 16px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+
+.year-sheets-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #a5b4fc;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.year-pills-list {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.year-pill-btn {
+  background: rgba(30, 41, 59, 0.8);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.year-pill-btn:hover {
+  border-color: var(--indigo-light);
+  color: #fff;
+}
+
+.year-pill-btn--active {
+  background: var(--indigo);
+  border-color: var(--indigo);
+  color: #fff;
+  box-shadow: 0 0 12px rgba(99, 102, 241, 0.4);
+}
+
+.add-year-pill-btn {
+  background: transparent;
+  border: 1px dashed rgba(99, 102, 241, 0.5);
+  color: var(--indigo-light);
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+
+.add-year-pill-btn:hover {
+  background: rgba(99, 102, 241, 0.15);
+  border-color: var(--indigo);
+  color: #fff;
+}
+
+/* ─── Auto Split Preview in Modal ────────────────────────────── */
+.auto-split-preview {
+  background: rgba(30, 41, 59, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.82rem;
+}
+
+.split-prev-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.batch-table-wrap {
+  max-height: 380px;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+
