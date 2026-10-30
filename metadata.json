@@ -1,0 +1,6 @@
+{
+  "name": "Mesfin & Zewdnesh Financial & Rental Analytics",
+  "description": "Automated multi-account income, rental property split, personal ledger, and consumable expense tracking with visual analytics and Excel reporting.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

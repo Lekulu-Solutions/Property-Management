@@ -1,0 +1,489 @@
+{
+  "entities": {
+    "Workbook": {
+      "title": "Workbook",
+      "description": "Master financial workbook metadata owned by an authenticated user.",
+      "type": "object",
+      "properties": {
+        "ownerId": {
+          "type": "string",
+          "description": "UID of the workbook owner.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "yearEC": {
+          "type": "string",
+          "description": "Ethiopian Calendar fiscal year label.",
+          "minLength": 1,
+          "maxLength": 40
+        },
+        "sourceFileName": {
+          "type": "string",
+          "description": "Source Excel or Markdown file name.",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "lastUpdated": {
+          "type": "string",
+          "description": "Human-readable last updated label.",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server creation timestamp."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server update timestamp."
+        }
+      },
+      "required": [
+        "ownerId",
+        "yearEC",
+        "sourceFileName",
+        "lastUpdated",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "TenantRental": {
+      "title": "TenantRental",
+      "description": "Individual tenant rental income record and partner split ratios across 12 Ethiopian months.",
+      "type": "object",
+      "properties": {
+        "ownerId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "workbookId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "tenantName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "tenantNameEn": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160
+        },
+        "splitLabel": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "splitType": {
+          "type": "string",
+          "enum": ["50_50", "100_MESFIN", "100_ZEWDNESH", "CUSTOM_RATIO"],
+          "maxLength": 32
+        },
+        "mesfinRatio": {
+          "type": "number"
+        },
+        "zewdneshRatio": {
+          "type": "number"
+        },
+        "m_meskerem": { "type": "number" },
+        "m_tikimt": { "type": "number" },
+        "m_hidar": { "type": "number" },
+        "m_tahsas": { "type": "number" },
+        "m_tir": { "type": "number" },
+        "m_yekatit": { "type": "number" },
+        "m_megabit": { "type": "number" },
+        "m_miyazya": { "type": "number" },
+        "m_ginbot": { "type": "number" },
+        "m_sene": { "type": "number" },
+        "m_hamle": { "type": "number" },
+        "m_nehase": { "type": "number" },
+        "sortOrder": { "type": "number" },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "ownerId",
+        "workbookId",
+        "tenantName",
+        "tenantNameEn",
+        "description",
+        "splitLabel",
+        "splitType",
+        "mesfinRatio",
+        "zewdneshRatio",
+        "m_meskerem",
+        "m_tikimt",
+        "m_hidar",
+        "m_tahsas",
+        "m_tir",
+        "m_yekatit",
+        "m_megabit",
+        "m_miyazya",
+        "m_ginbot",
+        "m_sene",
+        "m_hamle",
+        "m_nehase",
+        "sortOrder",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "PropertyExpense": {
+      "title": "PropertyExpense",
+      "description": "Shared or partner-specific monthly property expense row across 12 Ethiopian months.",
+      "type": "object",
+      "properties": {
+        "ownerId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "workbookId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "expenseType": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "expenseTypeEn": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160
+        },
+        "splitLabel": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "splitType": {
+          "type": "string",
+          "enum": ["50_50", "100_MESFIN", "100_ZEWDNESH", "CUSTOM_RATIO"],
+          "maxLength": 32
+        },
+        "mesfinRatio": { "type": "number" },
+        "zewdneshRatio": { "type": "number" },
+        "m_meskerem": { "type": "number" },
+        "m_tikimt": { "type": "number" },
+        "m_hidar": { "type": "number" },
+        "m_tahsas": { "type": "number" },
+        "m_tir": { "type": "number" },
+        "m_yekatit": { "type": "number" },
+        "m_megabit": { "type": "number" },
+        "m_miyazya": { "type": "number" },
+        "m_ginbot": { "type": "number" },
+        "m_sene": { "type": "number" },
+        "m_hamle": { "type": "number" },
+        "m_nehase": { "type": "number" },
+        "sortOrder": { "type": "number" },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "ownerId",
+        "workbookId",
+        "expenseType",
+        "expenseTypeEn",
+        "description",
+        "splitLabel",
+        "splitType",
+        "mesfinRatio",
+        "zewdneshRatio",
+        "m_meskerem",
+        "m_tikimt",
+        "m_hidar",
+        "m_tahsas",
+        "m_tir",
+        "m_yekatit",
+        "m_megabit",
+        "m_miyazya",
+        "m_ginbot",
+        "m_sene",
+        "m_hamle",
+        "m_nehase",
+        "sortOrder",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "LedgerEntry": {
+      "title": "LedgerEntry",
+      "description": "Personal income, deposit, or expense record for Mesfin or Zewdnesh.",
+      "type": "object",
+      "properties": {
+        "ownerId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "workbookId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "ledgerType": {
+          "type": "string",
+          "enum": ["mesfinIncome", "mesfinExpenses", "zewdneshDeposits", "zewdneshExpenses"],
+          "maxLength": 32
+        },
+        "dateOrMonth": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "category": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "amount": {
+          "type": "number"
+        },
+        "isPlaceholder": {
+          "type": "boolean"
+        },
+        "sortOrder": {
+          "type": "number"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "ownerId",
+        "workbookId",
+        "ledgerType",
+        "dateOrMonth",
+        "description",
+        "category",
+        "amount",
+        "isPlaceholder",
+        "sortOrder",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "GroceryItem": {
+      "title": "GroceryItem",
+      "description": "Monthly grocery and consumable expense item.",
+      "type": "object",
+      "properties": {
+        "ownerId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "workbookId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "itemIndex": {
+          "type": "number"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "nameEn": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "category": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "unit": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 60
+        },
+        "price": {
+          "type": "number"
+        },
+        "purchased": {
+          "type": "boolean"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "ownerId",
+        "workbookId",
+        "itemIndex",
+        "name",
+        "nameEn",
+        "category",
+        "unit",
+        "price",
+        "purchased",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "WaterRecord": {
+      "title": "WaterRecord",
+      "description": "Monthly water usage (4 weeks), installment deposit, and payment tracking record.",
+      "type": "object",
+      "properties": {
+        "ownerId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "workbookId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "itemIndex": {
+          "type": "number"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "nameEn": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "week1": {
+          "type": "number"
+        },
+        "week2": {
+          "type": "number"
+        },
+        "week3": {
+          "type": "number"
+        },
+        "week4": {
+          "type": "number"
+        },
+        "amountPaid": {
+          "type": "number"
+        },
+        "ratePerUnit": {
+          "type": "number"
+        },
+        "depositOverride": {
+          "type": "number"
+        },
+        "hasDepositOverride": {
+          "type": "boolean"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "ownerId",
+        "workbookId",
+        "itemIndex",
+        "name",
+        "nameEn",
+        "week1",
+        "week2",
+        "week3",
+        "week4",
+        "amountPaid",
+        "ratePerUnit",
+        "depositOverride",
+        "hasDepositOverride",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/workbooks/{workbookId}": {
+      "schema": { "$ref": "#/entities/Workbook" },
+      "description": "Master financial workbook metadata document keyed by owner UID."
+    },
+    "/workbooks/{workbookId}/tenants/{tenantId}": {
+      "schema": { "$ref": "#/entities/TenantRental" },
+      "description": "Subcollection of rental property tenants and monthly rent amounts."
+    },
+    "/workbooks/{workbookId}/propertyExpenses/{expenseId}": {
+      "schema": { "$ref": "#/entities/PropertyExpense" },
+      "description": "Subcollection of shared and partner-specific property expenses."
+    },
+    "/workbooks/{workbookId}/ledgerEntries/{entryId}": {
+      "schema": { "$ref": "#/entities/LedgerEntry" },
+      "description": "Subcollection of Mesfin and Zewdnesh personal ledger entries."
+    },
+    "/workbooks/{workbookId}/groceries/{groceryId}": {
+      "schema": { "$ref": "#/entities/GroceryItem" },
+      "description": "Subcollection of grocery and consumable items."
+    },
+    "/workbooks/{workbookId}/waterRecords/{waterId}": {
+      "schema": { "$ref": "#/entities/WaterRecord" },
+      "description": "Subcollection of monthly water usage and installment payment records."
+    }
+  }
+}

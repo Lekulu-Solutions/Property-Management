@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#064e3b" />
+      <stop offset="50%" stop-color="#047857" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fde68a" />
+      <stop offset="100%" stop-color="#f59e0b" />
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#bgGrad)" />
+  <rect x="44" y="44" width="424" height="424" rx="88" fill="none" stroke="rgba(255,255,255,0.14)" stroke-width="6" />
+  <!-- Building / Rental Property Pillars -->
+  <path d="M128 368V184L256 112L384 184V368" fill="none" stroke="url(#goldGrad)" stroke-width="22" stroke-linecap="round" stroke-linejoin="round" />
+  <!-- Ledger Bars (Mesfin Blue & Zewdnesh Purple & Shared Emerald) -->
+  <rect x="172" y="256" width="40" height="112" rx="8" fill="#38bdf8" />
+  <rect x="236" y="208" width="40" height="160" rx="8" fill="#34d399" />
+  <rect x="300" y="232" width="40" height="136" rx="8" fill="#c084fc" />
+  <!-- Base Line -->
+  <line x1="104" y1="368" x2="408" y2="368" stroke="#ffffff" stroke-width="18" stroke-linecap="round" />
+  <!-- Amharic / Ledger Badge -->
+  <text x="256" y="434" font-family="sans-serif" font-size="38" font-weight="800" fill="#ffffff" text-anchor="middle" letter-spacing="2">MZ · ETB</text>
+</svg>

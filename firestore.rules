@@ -1,0 +1,774 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global Safety Net: Default-deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Core Primitives
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null && request.auth.token.email_verified == true;
+    }
+
+    function isOwnerWorkbookId(workbookId) {
+      return workbookId == request.auth.uid ||
+        workbookId.matches('^' + request.auth.uid + '_[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isWorkbookOwner(workbookId) {
+      return isOwnerWorkbookId(workbookId) && (
+        (
+          exists(/databases/$(database)/documents/workbooks/$(workbookId)) &&
+          get(/databases/$(database)/documents/workbooks/$(workbookId)).data.ownerId == request.auth.uid
+        ) || (
+          existsAfter(/databases/$(database)/documents/workbooks/$(workbookId)) &&
+          getAfter(/databases/$(database)/documents/workbooks/$(workbookId)).data.ownerId == request.auth.uid
+        )
+      );
+    }
+
+    function isValidMonthVal(val) {
+      return val is number && val >= 0 && val <= 1000000000;
+    }
+
+    // Entity 1: Workbook Validation Blueprint
+    function isValidWorkbook(data) {
+      return data.keys().hasAll([
+          'ownerId',
+          'yearEC',
+          'sourceFileName',
+          'lastUpdated',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'ownerId',
+          'yearEC',
+          'sourceFileName',
+          'lastUpdated',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        data.ownerId is string &&
+        data.ownerId.size() >= 1 &&
+        data.ownerId.size() <= 128 &&
+        data.ownerId.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.ownerId == request.auth.uid &&
+        data.yearEC is string &&
+        data.yearEC.size() >= 1 &&
+        data.yearEC.size() <= 40 &&
+        data.sourceFileName is string &&
+        data.sourceFileName.size() >= 1 &&
+        data.sourceFileName.size() <= 120 &&
+        data.lastUpdated is string &&
+        data.lastUpdated.size() >= 1 &&
+        data.lastUpdated.size() <= 80 &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    // Entity 2: TenantRental Validation Blueprint
+    function isValidTenantRental(data) {
+      return data.keys().hasAll([
+          'ownerId',
+          'workbookId',
+          'tenantName',
+          'tenantNameEn',
+          'description',
+          'splitLabel',
+          'splitType',
+          'mesfinRatio',
+          'zewdneshRatio',
+          'm_meskerem',
+          'm_tikimt',
+          'm_hidar',
+          'm_tahsas',
+          'm_tir',
+          'm_yekatit',
+          'm_megabit',
+          'm_miyazya',
+          'm_ginbot',
+          'm_sene',
+          'm_hamle',
+          'm_nehase',
+          'sortOrder',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'ownerId',
+          'workbookId',
+          'tenantName',
+          'tenantNameEn',
+          'description',
+          'splitLabel',
+          'splitType',
+          'mesfinRatio',
+          'zewdneshRatio',
+          'm_meskerem',
+          'm_tikimt',
+          'm_hidar',
+          'm_tahsas',
+          'm_tir',
+          'm_yekatit',
+          'm_megabit',
+          'm_miyazya',
+          'm_ginbot',
+          'm_sene',
+          'm_hamle',
+          'm_nehase',
+          'sortOrder',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        data.ownerId is string &&
+        data.ownerId.size() >= 1 &&
+        data.ownerId.size() <= 128 &&
+        data.ownerId.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.ownerId == request.auth.uid &&
+        data.workbookId is string &&
+        data.workbookId.size() >= 1 &&
+        data.workbookId.size() <= 128 &&
+        data.workbookId.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.tenantName is string &&
+        data.tenantName.size() >= 1 &&
+        data.tenantName.size() <= 100 &&
+        data.tenantNameEn is string &&
+        data.tenantNameEn.size() >= 1 &&
+        data.tenantNameEn.size() <= 100 &&
+        data.description is string &&
+        data.description.size() >= 1 &&
+        data.description.size() <= 160 &&
+        data.splitLabel is string &&
+        data.splitLabel.size() >= 1 &&
+        data.splitLabel.size() <= 100 &&
+        data.splitType is string &&
+        data.splitType.size() <= 32 &&
+        (data.splitType == '50_50' ||
+          data.splitType == '100_MESFIN' ||
+          data.splitType == '100_ZEWDNESH' ||
+          data.splitType == 'CUSTOM_RATIO') &&
+        data.mesfinRatio is number &&
+        data.mesfinRatio >= 0 &&
+        data.mesfinRatio <= 1 &&
+        data.zewdneshRatio is number &&
+        data.zewdneshRatio >= 0 &&
+        data.zewdneshRatio <= 1 &&
+        isValidMonthVal(data.m_meskerem) &&
+        isValidMonthVal(data.m_tikimt) &&
+        isValidMonthVal(data.m_hidar) &&
+        isValidMonthVal(data.m_tahsas) &&
+        isValidMonthVal(data.m_tir) &&
+        isValidMonthVal(data.m_yekatit) &&
+        isValidMonthVal(data.m_megabit) &&
+        isValidMonthVal(data.m_miyazya) &&
+        isValidMonthVal(data.m_ginbot) &&
+        isValidMonthVal(data.m_sene) &&
+        isValidMonthVal(data.m_hamle) &&
+        isValidMonthVal(data.m_nehase) &&
+        data.sortOrder is number &&
+        data.sortOrder >= 0 &&
+        data.sortOrder <= 100000 &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    // Entity 3: PropertyExpense Validation Blueprint
+    function isValidPropertyExpense(data) {
+      return data.keys().hasAll([
+          'ownerId',
+          'workbookId',
+          'expenseType',
+          'expenseTypeEn',
+          'description',
+          'splitLabel',
+          'splitType',
+          'mesfinRatio',
+          'zewdneshRatio',
+          'm_meskerem',
+          'm_tikimt',
+          'm_hidar',
+          'm_tahsas',
+          'm_tir',
+          'm_yekatit',
+          'm_megabit',
+          'm_miyazya',
+          'm_ginbot',
+          'm_sene',
+          'm_hamle',
+          'm_nehase',
+          'sortOrder',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'ownerId',
+          'workbookId',
+          'expenseType',
+          'expenseTypeEn',
+          'description',
+          'splitLabel',
+          'splitType',
+          'mesfinRatio',
+          'zewdneshRatio',
+          'm_meskerem',
+          'm_tikimt',
+          'm_hidar',
+          'm_tahsas',
+          'm_tir',
+          'm_yekatit',
+          'm_megabit',
+          'm_miyazya',
+          'm_ginbot',
+          'm_sene',
+          'm_hamle',
+          'm_nehase',
+          'sortOrder',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        data.ownerId is string &&
+        data.ownerId.size() >= 1 &&
+        data.ownerId.size() <= 128 &&
+        data.ownerId.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.ownerId == request.auth.uid &&
+        data.workbookId is string &&
+        data.workbookId.size() >= 1 &&
+        data.workbookId.size() <= 128 &&
+        data.workbookId.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.expenseType is string &&
+        data.expenseType.size() >= 1 &&
+        data.expenseType.size() <= 100 &&
+        data.expenseTypeEn is string &&
+        data.expenseTypeEn.size() >= 1 &&
+        data.expenseTypeEn.size() <= 100 &&
+        data.description is string &&
+        data.description.size() >= 1 &&
+        data.description.size() <= 160 &&
+        data.splitLabel is string &&
+        data.splitLabel.size() >= 1 &&
+        data.splitLabel.size() <= 100 &&
+        data.splitType is string &&
+        data.splitType.size() <= 32 &&
+        (data.splitType == '50_50' ||
+          data.splitType == '100_MESFIN' ||
+          data.splitType == '100_ZEWDNESH' ||
+          data.splitType == 'CUSTOM_RATIO') &&
+        data.mesfinRatio is number &&
+        data.mesfinRatio >= 0 &&
+        data.mesfinRatio <= 1 &&
+        data.zewdneshRatio is number &&
+        data.zewdneshRatio >= 0 &&
+        data.zewdneshRatio <= 1 &&
+        isValidMonthVal(data.m_meskerem) &&
+        isValidMonthVal(data.m_tikimt) &&
+        isValidMonthVal(data.m_hidar) &&
+        isValidMonthVal(data.m_tahsas) &&
+        isValidMonthVal(data.m_tir) &&
+        isValidMonthVal(data.m_yekatit) &&
+        isValidMonthVal(data.m_megabit) &&
+        isValidMonthVal(data.m_miyazya) &&
+        isValidMonthVal(data.m_ginbot) &&
+        isValidMonthVal(data.m_sene) &&
+        isValidMonthVal(data.m_hamle) &&
+        isValidMonthVal(data.m_nehase) &&
+        data.sortOrder is number &&
+        data.sortOrder >= 0 &&
+        data.sortOrder <= 100000 &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    // Entity 4: LedgerEntry Validation Blueprint
+    function isValidLedgerEntry(data) {
+      return data.keys().hasAll([
+          'ownerId',
+          'workbookId',
+          'ledgerType',
+          'dateOrMonth',
+          'description',
+          'category',
+          'amount',
+          'isPlaceholder',
+          'sortOrder',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'ownerId',
+          'workbookId',
+          'ledgerType',
+          'dateOrMonth',
+          'description',
+          'category',
+          'amount',
+          'isPlaceholder',
+          'sortOrder',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        data.ownerId is string &&
+        data.ownerId.size() >= 1 &&
+        data.ownerId.size() <= 128 &&
+        data.ownerId.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.ownerId == request.auth.uid &&
+        data.workbookId is string &&
+        data.workbookId.size() >= 1 &&
+        data.workbookId.size() <= 128 &&
+        data.workbookId.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.ledgerType is string &&
+        data.ledgerType.size() <= 32 &&
+        (data.ledgerType == 'mesfinIncome' ||
+          data.ledgerType == 'mesfinExpenses' ||
+          data.ledgerType == 'zewdneshDeposits' ||
+          data.ledgerType == 'zewdneshExpenses') &&
+        data.dateOrMonth is string &&
+        data.dateOrMonth.size() >= 1 &&
+        data.dateOrMonth.size() <= 80 &&
+        data.description is string &&
+        data.description.size() >= 1 &&
+        data.description.size() <= 200 &&
+        data.category is string &&
+        data.category.size() >= 1 &&
+        data.category.size() <= 100 &&
+        data.amount is number &&
+        data.amount >= 0 &&
+        data.amount <= 1000000000 &&
+        data.isPlaceholder is bool &&
+        data.sortOrder is number &&
+        data.sortOrder >= 0 &&
+        data.sortOrder <= 100000 &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    // Entity 5: GroceryItem Validation Blueprint
+    function isValidGroceryItem(data) {
+      return data.keys().hasAll([
+          'ownerId',
+          'workbookId',
+          'itemIndex',
+          'name',
+          'nameEn',
+          'category',
+          'unit',
+          'price',
+          'purchased',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'ownerId',
+          'workbookId',
+          'itemIndex',
+          'name',
+          'nameEn',
+          'category',
+          'unit',
+          'price',
+          'purchased',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        data.ownerId is string &&
+        data.ownerId.size() >= 1 &&
+        data.ownerId.size() <= 128 &&
+        data.ownerId.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.ownerId == request.auth.uid &&
+        data.workbookId is string &&
+        data.workbookId.size() >= 1 &&
+        data.workbookId.size() <= 128 &&
+        data.workbookId.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.itemIndex is number &&
+        data.itemIndex >= 1 &&
+        data.itemIndex <= 10000 &&
+        data.name is string &&
+        data.name.size() >= 1 &&
+        data.name.size() <= 120 &&
+        data.nameEn is string &&
+        data.nameEn.size() >= 1 &&
+        data.nameEn.size() <= 120 &&
+        data.category is string &&
+        data.category.size() >= 1 &&
+        data.category.size() <= 100 &&
+        data.unit is string &&
+        data.unit.size() >= 1 &&
+        data.unit.size() <= 60 &&
+        data.price is number &&
+        data.price >= 0 &&
+        data.price <= 1000000000 &&
+        data.purchased is bool &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    // Entity 6: WaterRecord Validation Blueprint
+    function isValidWaterRecord(data) {
+      return data.keys().hasAll([
+          'ownerId',
+          'workbookId',
+          'itemIndex',
+          'name',
+          'nameEn',
+          'week1',
+          'week2',
+          'week3',
+          'week4',
+          'amountPaid',
+          'ratePerUnit',
+          'depositOverride',
+          'hasDepositOverride',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'ownerId',
+          'workbookId',
+          'itemIndex',
+          'name',
+          'nameEn',
+          'week1',
+          'week2',
+          'week3',
+          'week4',
+          'amountPaid',
+          'ratePerUnit',
+          'depositOverride',
+          'hasDepositOverride',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        data.ownerId is string &&
+        data.ownerId.size() >= 1 &&
+        data.ownerId.size() <= 128 &&
+        data.ownerId.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.ownerId == request.auth.uid &&
+        data.workbookId is string &&
+        data.workbookId.size() >= 1 &&
+        data.workbookId.size() <= 128 &&
+        data.workbookId.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.itemIndex is number &&
+        data.itemIndex >= 1 &&
+        data.itemIndex <= 10000 &&
+        data.name is string &&
+        data.name.size() >= 1 &&
+        data.name.size() <= 120 &&
+        data.nameEn is string &&
+        data.nameEn.size() >= 1 &&
+        data.nameEn.size() <= 120 &&
+        isValidMonthVal(data.week1) &&
+        isValidMonthVal(data.week2) &&
+        isValidMonthVal(data.week3) &&
+        isValidMonthVal(data.week4) &&
+        isValidMonthVal(data.amountPaid) &&
+        isValidMonthVal(data.ratePerUnit) &&
+        data.depositOverride is number &&
+        data.depositOverride >= -1000000000 &&
+        data.depositOverride <= 1000000000 &&
+        data.hasDepositOverride is bool &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    // Collection 1: /workbooks/{workbookId}
+    match /workbooks/{workbookId} {
+      allow get: if isSignedIn() &&
+        isValidId(workbookId) &&
+        ((resource == null && isOwnerWorkbookId(workbookId)) ||
+          (resource != null && existing().ownerId == request.auth.uid));
+      allow list: if isSignedIn() && existing().ownerId == request.auth.uid;
+      allow create: if isSignedIn() &&
+        isValidId(workbookId) &&
+        isOwnerWorkbookId(workbookId) &&
+        isValidWorkbook(incoming()) &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time;
+      allow update: if isSignedIn() &&
+        isValidId(workbookId) &&
+        isValidWorkbook(incoming()) &&
+        existing().ownerId == request.auth.uid &&
+        incoming().ownerId == existing().ownerId &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time &&
+        incoming().diff(existing()).affectedKeys().hasOnly([
+          'yearEC',
+          'sourceFileName',
+          'lastUpdated',
+          'updatedAt'
+        ]);
+      allow delete: if isSignedIn() &&
+        isValidId(workbookId) &&
+        resource != null &&
+        existing().ownerId == request.auth.uid;
+
+      // Subcollection 1: /workbooks/{workbookId}/tenants/{tenantId}
+      match /tenants/{tenantId} {
+        allow get: if isSignedIn() &&
+          isValidId(workbookId) &&
+          isValidId(tenantId) &&
+          ((resource == null && isOwnerWorkbookId(workbookId)) ||
+            (resource != null && existing().ownerId == request.auth.uid)) &&
+          isWorkbookOwner(workbookId);
+        allow list: if isSignedIn() && existing().ownerId == request.auth.uid;
+        allow create: if isSignedIn() &&
+          isValidId(workbookId) &&
+          isValidId(tenantId) &&
+          isValidTenantRental(incoming()) &&
+          incoming().workbookId == workbookId &&
+          incoming().createdAt == request.time &&
+          incoming().updatedAt == request.time &&
+          isWorkbookOwner(workbookId);
+        allow update: if isSignedIn() &&
+          isValidId(workbookId) &&
+          isValidId(tenantId) &&
+          isValidTenantRental(incoming()) &&
+          existing().ownerId == request.auth.uid &&
+          incoming().ownerId == existing().ownerId &&
+          incoming().workbookId == existing().workbookId &&
+          incoming().createdAt == existing().createdAt &&
+          incoming().updatedAt == request.time &&
+          incoming().diff(existing()).affectedKeys().hasOnly([
+            'tenantName',
+            'tenantNameEn',
+            'description',
+            'splitLabel',
+            'splitType',
+            'mesfinRatio',
+            'zewdneshRatio',
+            'm_meskerem',
+            'm_tikimt',
+            'm_hidar',
+            'm_tahsas',
+            'm_tir',
+            'm_yekatit',
+            'm_megabit',
+            'm_miyazya',
+            'm_ginbot',
+            'm_sene',
+            'm_hamle',
+            'm_nehase',
+            'sortOrder',
+            'updatedAt'
+          ]) &&
+          isWorkbookOwner(workbookId);
+        allow delete: if isSignedIn() &&
+          isValidId(workbookId) &&
+          isValidId(tenantId) &&
+          resource != null &&
+          existing().ownerId == request.auth.uid &&
+          isWorkbookOwner(workbookId);
+      }
+
+      // Subcollection 2: /workbooks/{workbookId}/propertyExpenses/{expenseId}
+      match /propertyExpenses/{expenseId} {
+        allow get: if isSignedIn() &&
+          isValidId(workbookId) &&
+          isValidId(expenseId) &&
+          ((resource == null && isOwnerWorkbookId(workbookId)) ||
+            (resource != null && existing().ownerId == request.auth.uid)) &&
+          isWorkbookOwner(workbookId);
+        allow list: if isSignedIn() && existing().ownerId == request.auth.uid;
+        allow create: if isSignedIn() &&
+          isValidId(workbookId) &&
+          isValidId(expenseId) &&
+          isValidPropertyExpense(incoming()) &&
+          incoming().workbookId == workbookId &&
+          incoming().createdAt == request.time &&
+          incoming().updatedAt == request.time &&
+          isWorkbookOwner(workbookId);
+        allow update: if isSignedIn() &&
+          isValidId(workbookId) &&
+          isValidId(expenseId) &&
+          isValidPropertyExpense(incoming()) &&
+          existing().ownerId == request.auth.uid &&
+          incoming().ownerId == existing().ownerId &&
+          incoming().workbookId == existing().workbookId &&
+          incoming().createdAt == existing().createdAt &&
+          incoming().updatedAt == request.time &&
+          incoming().diff(existing()).affectedKeys().hasOnly([
+            'expenseType',
+            'expenseTypeEn',
+            'description',
+            'splitLabel',
+            'splitType',
+            'mesfinRatio',
+            'zewdneshRatio',
+            'm_meskerem',
+            'm_tikimt',
+            'm_hidar',
+            'm_tahsas',
+            'm_tir',
+            'm_yekatit',
+            'm_megabit',
+            'm_miyazya',
+            'm_ginbot',
+            'm_sene',
+            'm_hamle',
+            'm_nehase',
+            'sortOrder',
+            'updatedAt'
+          ]) &&
+          isWorkbookOwner(workbookId);
+        allow delete: if isSignedIn() &&
+          isValidId(workbookId) &&
+          isValidId(expenseId) &&
+          resource != null &&
+          existing().ownerId == request.auth.uid &&
+          isWorkbookOwner(workbookId);
+      }
+
+      // Subcollection 3: /workbooks/{workbookId}/ledgerEntries/{entryId}
+      match /ledgerEntries/{entryId} {
+        allow get: if isSignedIn() &&
+          isValidId(workbookId) &&
+          isValidId(entryId) &&
+          ((resource == null && isOwnerWorkbookId(workbookId)) ||
+            (resource != null && existing().ownerId == request.auth.uid)) &&
+          isWorkbookOwner(workbookId);
+        allow list: if isSignedIn() && existing().ownerId == request.auth.uid;
+        allow create: if isSignedIn() &&
+          isValidId(workbookId) &&
+          isValidId(entryId) &&
+          isValidLedgerEntry(incoming()) &&
+          incoming().workbookId == workbookId &&
+          incoming().createdAt == request.time &&
+          incoming().updatedAt == request.time &&
+          isWorkbookOwner(workbookId);
+        allow update: if isSignedIn() &&
+          isValidId(workbookId) &&
+          isValidId(entryId) &&
+          isValidLedgerEntry(incoming()) &&
+          existing().ownerId == request.auth.uid &&
+          incoming().ownerId == existing().ownerId &&
+          incoming().workbookId == existing().workbookId &&
+          incoming().ledgerType == existing().ledgerType &&
+          incoming().createdAt == existing().createdAt &&
+          incoming().updatedAt == request.time &&
+          incoming().diff(existing()).affectedKeys().hasOnly([
+            'dateOrMonth',
+            'description',
+            'category',
+            'amount',
+            'isPlaceholder',
+            'sortOrder',
+            'updatedAt'
+          ]) &&
+          isWorkbookOwner(workbookId);
+        allow delete: if isSignedIn() &&
+          isValidId(workbookId) &&
+          isValidId(entryId) &&
+          resource != null &&
+          existing().ownerId == request.auth.uid &&
+          isWorkbookOwner(workbookId);
+      }
+
+      // Subcollection 4: /workbooks/{workbookId}/groceries/{groceryId}
+      match /groceries/{groceryId} {
+        allow get: if isSignedIn() &&
+          isValidId(workbookId) &&
+          isValidId(groceryId) &&
+          ((resource == null && isOwnerWorkbookId(workbookId)) ||
+            (resource != null && existing().ownerId == request.auth.uid)) &&
+          isWorkbookOwner(workbookId);
+        allow list: if isSignedIn() && existing().ownerId == request.auth.uid;
+        allow create: if isSignedIn() &&
+          isValidId(workbookId) &&
+          isValidId(groceryId) &&
+          isValidGroceryItem(incoming()) &&
+          incoming().workbookId == workbookId &&
+          incoming().createdAt == request.time &&
+          incoming().updatedAt == request.time &&
+          isWorkbookOwner(workbookId);
+        allow update: if isSignedIn() &&
+          isValidId(workbookId) &&
+          isValidId(groceryId) &&
+          isValidGroceryItem(incoming()) &&
+          existing().ownerId == request.auth.uid &&
+          incoming().ownerId == existing().ownerId &&
+          incoming().workbookId == existing().workbookId &&
+          incoming().createdAt == existing().createdAt &&
+          incoming().updatedAt == request.time &&
+          incoming().diff(existing()).affectedKeys().hasOnly([
+            'itemIndex',
+            'name',
+            'nameEn',
+            'category',
+            'unit',
+            'price',
+            'purchased',
+            'updatedAt'
+          ]) &&
+          isWorkbookOwner(workbookId);
+        allow delete: if isSignedIn() &&
+          isValidId(workbookId) &&
+          isValidId(groceryId) &&
+          resource != null &&
+          existing().ownerId == request.auth.uid &&
+          isWorkbookOwner(workbookId);
+      }
+
+      // Subcollection 5: /workbooks/{workbookId}/waterRecords/{waterId}
+      match /waterRecords/{waterId} {
+        allow get: if isSignedIn() &&
+          isValidId(workbookId) &&
+          isValidId(waterId) &&
+          ((resource == null && isOwnerWorkbookId(workbookId)) ||
+            (resource != null && existing().ownerId == request.auth.uid)) &&
+          isWorkbookOwner(workbookId);
+        allow list: if isSignedIn() && existing().ownerId == request.auth.uid;
+        allow create: if isSignedIn() &&
+          isValidId(workbookId) &&
+          isValidId(waterId) &&
+          isValidWaterRecord(incoming()) &&
+          incoming().workbookId == workbookId &&
+          incoming().createdAt == request.time &&
+          incoming().updatedAt == request.time &&
+          isWorkbookOwner(workbookId);
+        allow update: if isSignedIn() &&
+          isValidId(workbookId) &&
+          isValidId(waterId) &&
+          isValidWaterRecord(incoming()) &&
+          existing().ownerId == request.auth.uid &&
+          incoming().ownerId == existing().ownerId &&
+          incoming().workbookId == existing().workbookId &&
+          incoming().createdAt == existing().createdAt &&
+          incoming().updatedAt == request.time &&
+          incoming().diff(existing()).affectedKeys().hasOnly([
+            'itemIndex',
+            'name',
+            'nameEn',
+            'week1',
+            'week2',
+            'week3',
+            'week4',
+            'amountPaid',
+            'ratePerUnit',
+            'depositOverride',
+            'hasDepositOverride',
+            'updatedAt'
+          ]) &&
+          isWorkbookOwner(workbookId);
+        allow delete: if isSignedIn() &&
+          isValidId(workbookId) &&
+          isValidId(waterId) &&
+          resource != null &&
+          existing().ownerId == request.auth.uid &&
+          isWorkbookOwner(workbookId);
+      }
+    }
+  }
+}
